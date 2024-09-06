@@ -44,7 +44,7 @@
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Form1.cs",
               "ToolTip": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Form1.cs",
               "RelativeToolTip": "KancolleQuestTracker\\Form1.cs",
-              "ViewState": "AQIAAP8CAAAAAAAAAAAkwDMDAAAAAAAA",
+              "ViewState": "AQIAAKACAAAAAAAAAAAqwL8CAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-03T01:01:18.529Z",
               "IsPinned": true,
@@ -85,7 +85,8 @@
               "RelativeToolTip": "KancolleQuestTracker\\Reward.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-05T02:46:32.509Z"
+              "WhenOpened": "2024-09-05T02:46:32.509Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -97,7 +98,8 @@
               "RelativeToolTip": "KancolleQuestTracker\\Program.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-03T00:58:57.729Z"
+              "WhenOpened": "2024-09-03T00:58:57.729Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -109,7 +111,8 @@
               "RelativeToolTip": "KancolleQuestTracker\\QuestItem.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAqwAkAAAATAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-05T02:24:38.989Z"
+              "WhenOpened": "2024-09-05T02:24:38.989Z",
+              "EditorCaption": ""
             }
           ]
         }

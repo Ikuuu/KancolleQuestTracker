@@ -685,146 +685,136 @@ namespace KancolleQuestTracker
 
         private void ImportQuests_Click(object sender, EventArgs e)
         {
-            //String url = "https://en.kancollewiki.net/Quests";
-            //HtmlWeb web = new HtmlWeb();
+            String url = "https://en.kancollewiki.net/Quests";
+            HtmlWeb web = new HtmlWeb();
 
 
 
-            String wikiPDF;
-            String wikiInfo;
 
-            OpenFileDialog aWikiPDF = new OpenFileDialog();
+            List<HtmlNode> wikitables = new List<HtmlNode>();
+            List<HTMLQuestItems> htmlQuests = new List<HTMLQuestItems>();
 
-            DialogResult results = aWikiPDF.ShowDialog();
-            if (results == DialogResult.OK)
+
+            try
             {
+                HtmlAgilityPack.HtmlDocument htmlDoc = web.Load(url);
+                    
 
-                wikiInfo = aWikiPDF.FileName;
-                List<HtmlNode> wikitables = new List<HtmlNode>();
-                List<HTMLQuestItems> htmlQuests = new List<HTMLQuestItems>();
+                HtmlNode htmlNode = htmlDoc.DocumentNode.ChildNodes[3].ChildNodes[3].ChildNodes[5].ChildNodes[9].ChildNodes[13].ChildNodes[0];
 
 
-                try
+
+                foreach (HtmlNode node in htmlNode.ChildNodes)
                 {
-                    HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
-                    htmlDoc.Load(wikiInfo);
-
-                    HtmlNode htmlNode = htmlDoc.DocumentNode.ChildNodes[3].ChildNodes[3].ChildNodes[5].ChildNodes[9].ChildNodes[13].ChildNodes[0];
-
-
-
-                    foreach (HtmlNode node in htmlNode.ChildNodes)
+                    if (node.Name == "table" && node.OuterHtml.Contains("wikitable q"))
                     {
-                        if (node.Name == "table" && node.OuterHtml.Contains("wikitable q"))
-                        {
-                            wikitables.Add(node.ChildNodes[1]);
-                        }
+                        wikitables.Add(node.ChildNodes[1]);
                     }
-
-                    foreach (HtmlNode node in wikitables)
-                    {
-                        for (int i = 2; i < node.ChildNodes.Count; i++)
-                        {
-                            if (!String.IsNullOrEmpty(node.ChildNodes[i].Id))
-                            {
-                                HTMLQuestItems aQuestItem = new HTMLQuestItems();
-
-                                aQuestItem.ID = node.ChildNodes[i];
-                                aQuestItem.Description = node.ChildNodes[i + 2];
-                                aQuestItem.Requirenment = node.ChildNodes[i + 4];
-                                aQuestItem.PreReq = node.ChildNodes[i + 6];
-                                aQuestItem.Notes = node.ChildNodes[i + 8];
-
-
-                                htmlQuests.Add(aQuestItem);
-
-                                i += 8;
-
-                            }
-                        }
-                    }
-
-                    foreach (HTMLQuestItems questItem in htmlQuests)
-                    {
-                        QuestItem aQuest = new QuestItem();
-                        aQuest.ID = questItem.ID.Id;
-                        aQuest.repeat = questItem.ID.ChildNodes[1].InnerText;
-                        String nameString = questItem.ID.ChildNodes[3].OuterHtml;
-                        String fuelString = questItem.ID.ChildNodes[5].InnerText;
-                        String ammoString = questItem.ID.ChildNodes[7].InnerText;
-                        String steelString = questItem.ID.ChildNodes[9].InnerText;
-                        String bauxiteString = questItem.ID.ChildNodes[11].InnerText;
-                        String descriptionString = questItem.Description.ChildNodes[1].InnerText;
-                        String requirementString = questItem.Requirenment.ChildNodes[1].InnerText;
-                        String preReqString = questItem.PreReq.ChildNodes[3].InnerText;
-                        String notesString = questItem.Notes.ChildNodes[3].InnerText;
-
-                        int pFrom = nameString.IndexOf("<i>") + "<i>".Length;
-                        int pTo = nameString.LastIndexOf("</i>");
-                        aQuest.name = nameString.Substring(pFrom, pTo - pFrom);
-
-                        aQuest.fuel = Int32.Parse(fuelString.Substring(0, fuelString.Length - 1));
-                        aQuest.ammo = Int32.Parse(ammoString.Substring(0, ammoString.Length - 1));
-                        aQuest.steel = Int32.Parse(steelString.Substring(0, steelString.Length - 1));
-                        aQuest.bauxite = Int32.Parse(bauxiteString.Substring(0, bauxiteString.Length - 1));
-                        aQuest.requirement = requirementString;
-                        aQuest.description = descriptionString.Substring(0, descriptionString.Length - 1);
-                        aQuest.prereqs = preReqString.Substring(0, preReqString.Length - 1);
-                        aQuest.notes = notesString.Substring(0, notesString.Length - 1);
-
-                        switch (aQuest.ID.ElementAt(0))
-                        {
-                            case 'A':
-                                aQuest.type = "Composition";
-                                break;
-                            case 'B':
-                                aQuest.type = "Sortie";
-                                break;
-                            case 'C':
-                                aQuest.type = "Exersise";
-                                break;
-                            case 'D':
-                                aQuest.type = "Expedition";
-                                break;
-                            case 'E':
-                                aQuest.type = "Supply";
-                                break;
-                            case 'F':
-                                aQuest.type = "Factory";
-                                break;
-                            case 'G':
-                                aQuest.type = "Modernization";
-                                break;
-                            case 'W':
-                                aQuest.type = "Marriage";
-                                break;
-                            default:
-                                aQuest.type = "Unknown";
-                                break;
-                        }
-
-                        foreach (HtmlNode rewardNode in questItem.Description.ChildNodes[3].ChildNodes)
-                        {
-                            if (rewardNode.Name == "div")
-                            {
-                                Reward aReward = new Reward();
-                                aReward.name = rewardNode.InnerText;
-                                aReward.imgLink = rewardNode.ChildNodes[0].ChildNodes[0].GetAttributeValue("src", "Not Found");
-                                aQuest.possibleRewards.Add(aReward);
-                            }
-                        }
-
-
-                        quests.Add(aQuest);
-                    }
-
-                    btnPopulate.Enabled = true;
-
                 }
-                catch (Exception ex)
+
+                foreach (HtmlNode node in wikitables)
                 {
-                    throw new Exception(ex.Message);
+                    for (int i = 2; i < node.ChildNodes.Count; i++)
+                    {
+                        if (!String.IsNullOrEmpty(node.ChildNodes[i].Id))
+                        {
+                            HTMLQuestItems aQuestItem = new HTMLQuestItems();
+
+                            aQuestItem.ID = node.ChildNodes[i];
+                            aQuestItem.Description = node.ChildNodes[i + 2];
+                            aQuestItem.Requirenment = node.ChildNodes[i + 4];
+                            aQuestItem.PreReq = node.ChildNodes[i + 6];
+                            aQuestItem.Notes = node.ChildNodes[i + 8];
+
+
+                            htmlQuests.Add(aQuestItem);
+
+                            i += 8;
+
+                        }
+                    }
                 }
+
+                foreach (HTMLQuestItems questItem in htmlQuests)
+                {
+                    QuestItem aQuest = new QuestItem();
+                    aQuest.ID = questItem.ID.Id;
+                    aQuest.repeat = questItem.ID.ChildNodes[1].InnerText;
+                    String nameString = questItem.ID.ChildNodes[3].OuterHtml;
+                    String fuelString = questItem.ID.ChildNodes[5].InnerText;
+                    String ammoString = questItem.ID.ChildNodes[7].InnerText;
+                    String steelString = questItem.ID.ChildNodes[9].InnerText;
+                    String bauxiteString = questItem.ID.ChildNodes[11].InnerText;
+                    String descriptionString = questItem.Description.ChildNodes[1].InnerText;
+                    String requirementString = questItem.Requirenment.ChildNodes[1].InnerText;
+                    String preReqString = questItem.PreReq.ChildNodes[3].InnerText;
+                    String notesString = questItem.Notes.ChildNodes[3].InnerText;
+
+                    int pFrom = nameString.IndexOf("<i>") + "<i>".Length;
+                    int pTo = nameString.LastIndexOf("</i>");
+                    aQuest.name = nameString.Substring(pFrom, pTo - pFrom);
+
+                    aQuest.fuel = Int32.Parse(fuelString.Substring(0, fuelString.Length - 1));
+                    aQuest.ammo = Int32.Parse(ammoString.Substring(0, ammoString.Length - 1));
+                    aQuest.steel = Int32.Parse(steelString.Substring(0, steelString.Length - 1));
+                    aQuest.bauxite = Int32.Parse(bauxiteString.Substring(0, bauxiteString.Length - 1));
+                    aQuest.requirement = requirementString;
+                    aQuest.description = descriptionString.Substring(0, descriptionString.Length - 1);
+                    aQuest.prereqs = preReqString.Substring(0, preReqString.Length - 1);
+                    aQuest.notes = notesString.Substring(0, notesString.Length - 1);
+
+                    switch (aQuest.ID.ElementAt(0))
+                    {
+                        case 'A':
+                            aQuest.type = "Composition";
+                            break;
+                        case 'B':
+                            aQuest.type = "Sortie";
+                            break;
+                        case 'C':
+                            aQuest.type = "Exersise";
+                            break;
+                        case 'D':
+                            aQuest.type = "Expedition";
+                            break;
+                        case 'E':
+                            aQuest.type = "Supply";
+                            break;
+                        case 'F':
+                            aQuest.type = "Factory";
+                            break;
+                        case 'G':
+                            aQuest.type = "Modernization";
+                            break;
+                        case 'W':
+                            aQuest.type = "Marriage";
+                            break;
+                        default:
+                            aQuest.type = "Unknown";
+                            break;
+                    }
+
+                    foreach (HtmlNode rewardNode in questItem.Description.ChildNodes[3].ChildNodes)
+                    {
+                        if (rewardNode.Name == "div")
+                        {
+                            Reward aReward = new Reward();
+                            aReward.name = rewardNode.InnerText;
+                            aReward.imgLink = rewardNode.ChildNodes[0].ChildNodes[0].GetAttributeValue("src", "Not Found");
+                            aQuest.possibleRewards.Add(aReward);
+                        }
+                    }
+
+
+                    quests.Add(aQuest);
+                }
+
+                btnPopulate.Enabled = true;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
 
 
