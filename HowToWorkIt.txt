@@ -1,0 +1,11 @@
+Step 1) Go to https://en.kancollewiki.net/Quests right click on the page and click "save as". Make sure to select HTML ONLY. This will be your first input file. I suggest saving it inside the solution "KancolleQuestTracker/bin/Debug/InputFiles".
+
+Step 2) THIS IS "OPTIONAL". If you want to track your quests from the extension's flowchart write down everything that is available into a text file. Separate each quest with a ",". It should look something like "A1,A2,A3...". Name it Quests.txt and put in the same folder as above.
+
+Step 3) If the .exe is not build you will have to build it by launching the .sln file. On the right you should see "Solution 'KancolleQuestTracker'". Simply right click that and hit clean then right click again and rebuild. This will generate an .exe file in "KancolleQuestTracker/bin/Debug".
+
+Step 4) Open the .exe file named KancolleQuestTracker.exe and hit the button "Import Quests from Wiki" and select the file you created in step 1. Then click "Populate viewer".
+NOTE: Once you do Step 4, wait a few seconds for it to load all the quest onto the viewer and then Scroll out quite a bit to see it all.
+
+Step 5) If you did step 2, then you can hit "Submit Quests" and it will, to the best of its ability, fill out the quests that you've done. NOTE: It will not find every quest you've done since it only knows what you have available and not what you've done.
+

@@ -1,0 +1,1915 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Northwoods.GoDiagram.WinForms.TreeLayout</name>
+    </assembly>
+    <members>
+        <member name="T:Northwoods.Go.Layouts.TreeLayout">
+             <summary>
+             This layout positions nodes of a tree-structured graph in layers (rows or columns).
+             </summary>
+             <remarks>
+             <p class="boxrun">
+             For a discussion and examples of the most commonly used properties, see <a href="../../intro/trees.Html">Trees</a> page in the Introduction.
+             If you want to experiment interactively with most of the properties, try the Tree Layout sample.
+             See samples that make use of TreeLayout in the <a href="../../samples/index.Html#treelayout">samples index</a>.
+             </p>
+            
+             This layout makes use of a <see cref="T:Northwoods.Go.Layouts.Network`3"/> of
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es and <see cref="T:Northwoods.Go.Layouts.TreeEdge"/>s that normally
+             correspond to the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of the <see cref="T:Northwoods.Go.Diagram"/>.
+            
+             The most commonly set properties for controlling the results of a TreeLayout are:
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.Angle"/>: the direction in which the tree grows, from parent to child;
+                 the default value of zero means that the tree grows towards the right, with the children of a node arranged in a layer that is a column.
+                 An angle of 0 or 180 means that children form vertical layers -- breadth is height and depth is width;
+                 an angle of 90 or 270 means that children form horizontal layers -- breadth is width and depth is height.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/>: the distance between layers -- between a parent node and its child nodes.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeSpacing"/>: the distance between nodes within a layer -- between siblings.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>: the relative position of a parent node with its children.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.Sorting"/> and <see cref="P:Northwoods.Go.Layouts.TreeLayout.Comparer"/>: specify the order of the immediate children of a parent node.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.Compaction"/>: whether subtrees should be packed closer together if there is room.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerStyle"/>: whether the children of one node are aligned with the children of a sibling node.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.SetsPortSpot"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.PortSpot"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.SetsChildPortSpot"/>, and <see cref="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot"/>: this controls whether to set the <see cref="P:Northwoods.Go.Link.FromSpot"/> and
+                 <see cref="P:Northwoods.Go.Link.ToSpot"/> to be sensible for the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Angle"/>.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndent"/> and <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndentPastParent"/>: if the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start"/> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End"/>,
+                 control how much extra space the first child is given when positioned.
+               - <see cref="P:Northwoods.Go.Layouts.TreeLayout.BreadthLimit"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowSpacing"/>: try to limit the total breadth of a subtree to a certain distance;
+                 when there are too many children or when they are too broad, this puts children into additional rows (or columns, depending on the angle)
+                 thereby limiting the breadth while increasing the depth of the tree.
+            
+             When you set one of the TreeLayout properties listed above, that property normally applies to all of the nodes in the tree.
+             What if you want <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> to be <see cref="F:Northwoods.Go.Layouts.TreeAlignment.CenterChildren"/> for the root node but <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Bus"/> for the other nodes in the tree?
+             Or what if you want want <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> to be 50 for all layers except for the layer separating "leaf" nodes from their parent?
+            
+             One common solution is to set <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/>.
+             For the former scenario, you could set <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/> to <see cref="F:Northwoods.Go.Layouts.TreeStyle.RootOnly"/>; the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> would only apply to the root node.
+             For the latter scenario, you could set it to <see cref="F:Northwoods.Go.Layouts.TreeStyle.LastParents"/>;
+             the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> would apply to all nodes except those that have children but that do not have grandchildren.
+             How do you then set the Alignment or LayerSpacing for the other nodes?
+             By setting the TreeLayout properties whose names start with "Alternate...".
+             In these cases that would mean setting <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateAlignment"/> or <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/>.
+            
+             These TreeLayout properties actually apply to the <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> that the TreeLayout uses to represent a <see cref="T:Northwoods.Go.Node"/> within the <see cref="T:Northwoods.Go.Layouts.TreeNetwork"/>.
+             All of those TreeLayout properties are actually stored in <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>; all of the "Alternate..." properties are stored in <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>.
+             Depending on the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/>, the actual TreeVertex properties for each Node are copied appropriately from either RootDefaults or AlternateDefaults.
+             In the default case where TreeStyle is <see cref="F:Northwoods.Go.Layouts.TreeStyle.Layered"/>, the AlternateDefaults are ignored.
+             (Note that TreeStyle, and a few other properties such as <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> and <see cref="P:Northwoods.Go.Layouts.TreeLayout.Arrangement"/>, apply to the whole layout, not to an individual node/vertex.)
+            
+             The use of <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/> and "Alternate..." TreeLayout properties will cover a lot of common needs for tree layout customization.
+             However, there may be times when that is not enough.
+             Imagine a situation where you want a special <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> property value for a particular <see cref="T:Northwoods.Go.Node"/>.
+             The solution is to override <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/>, where you can examine the given <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>,
+             including its corresponding <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/>, to decide what TreeVertex property values should apply.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.#ctor">
+            <summary>
+            Constructs a <see cref="T:Northwoods.Go.Layouts.TreeLayout"/> with no <see cref="P:Northwoods.Go.Layouts.NetworkLayout`4.Network"/>
+            and with no owning <see cref="P:Northwoods.Go.Layouts.Layout.Diagram"/>.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CloneProtected(Northwoods.Go.Layouts.Layout)">
+            <summary>
+            Copies properties to a cloned Layout.
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.MakeNetwork(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})">
+            <summary>
+            Create and initialize a <see cref="T:Northwoods.Go.Layouts.TreeNetwork"/> with the given nodes and links.
+            </summary>
+            <remarks>
+            This does not include any nodes of category "Comment".
+            Comment nodes are added by the <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})">
+             <summary>
+             Perform the tree layout.
+             </summary>
+             <remarks>
+             If there are no <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> <see cref="P:Northwoods.Go.Layouts.TreeLayout.Roots"/> specified, this finds all roots in the <see cref="P:Northwoods.Go.Layouts.NetworkLayout`4.Network"/>.
+            
+             This initializes all of the <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es and <see cref="T:Northwoods.Go.Layouts.TreeEdge"/>s, calling <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> on each vertex,
+             supporting inheritance of vertex values.
+             Then it calls <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> on each one, to allow for node/vertex-specific customizations.
+             Next it sorts all of the child vertexes for each parent vertex, if needed.
+            
+             This also calls <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> of each vertex, in order to find any comment nodes associated with each vertex,
+             so that they can be accommodated by the layout.
+            
+             This then actually does the "layout" of the vertexes and optionally the routing of the edges of each tree in the network.
+             To deal with multiple roots/trees this also calls <see cref="M:Northwoods.Go.Layouts.TreeLayout.ArrangeTrees"/> to position each separate tree relative to each other.
+            
+             Finally this calls <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> to commit the Node positions from the vertex positions and the Link routes from the edges.
+             <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> calls <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLayout"/> within a transaction.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CreateTrees">
+            @hidden @internal
+            <summary>
+            This method is responsible for initializing all of the <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es,
+            setting <see cref="P:Northwoods.Go.Layouts.TreeVertex.Initialized"/>, <see cref="P:Northwoods.Go.Layouts.TreeVertex.Level"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeVertex.Parent"/>, and <see cref="P:Northwoods.Go.Layouts.TreeVertex.Children"/>, and making sure roots
+            has at least one suitable <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in it.
+            </summary>
+            <remarks>
+            This will call FindRoots if roots is empty.
+            Then it will iterate over the roots, calling WalkTree on each one.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FindRoots">
+            @hidden @internal
+            <summary>
+            This method is responsible for finding all of the root nodes.
+            </summary>
+            <remarks>
+            When you have not already added the roots to the roots collection,
+            this will choose a root node.
+            The choice may not be what you want, so we recommend that you specify the roots.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ChooseRoot(System.Collections.Generic.IEnumerable{Northwoods.Go.Layouts.TreeVertex})">
+            @hidden @internal
+            <summary>
+            This method is responsible for picking a root node if none were found.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.WalkTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+            <summary>
+            Traverse the <see cref="!:Network"/> and assign the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Parent"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeVertex.Level"/>, and <see cref="P:Northwoods.Go.Layouts.TreeVertex.Children"/> properties.
+            </summary>
+            <remarks>
+            This method should walk the tree recursively.
+            The standard implementation gracefully handles shared nodes, including cyclical references.
+            However, there can only be one <see cref="P:Northwoods.Go.Layouts.TreeVertex.Parent"/> per node.
+            If a node is declared to be the child of multiple nodes, it is not guaranteed which
+            node wins as the parent node.
+            If any of the children of this node are in the roots collection,
+            they are removed from that collection.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.WalkOK(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.IsAncestor(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+            <summary>
+            Determines if vertex a is an ancestor of vertex b.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.RemoveChild(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.InitializeAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.InitializeTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.Mom(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)">
+             <summary>
+             Assign initial property values for a <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>.
+             </summary>
+             <remarks>
+             The values may be inherited, so this method is called while
+             propagating values from the root nodes.
+             This method should not walk the tree, since it is called for each
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in a depth-first manner starting at a root.
+            
+             You probably do not need to override this method,
+             but if you do you should call first either the base method
+             or <see cref="M:Northwoods.Go.Layouts.TreeVertex.CopyInheritedPropertiesFrom(Northwoods.Go.Layouts.TreeVertex)"/>, since they
+             assign most of the <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> property values
+             used to influence the layout.
+             Informational properties such as <see cref="P:Northwoods.Go.Layouts.TreeVertex.DescendantCount"/>
+             and <see cref="P:Northwoods.Go.Layouts.TreeVertex.MaxGenerationCount"/> will not yet have been initialized
+             by the time this method is called.
+             It is more common to override <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> in order to
+             modify a property or two to customize the layout at that node.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            
+             When the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.BusBranching"/>,
+             this will modify the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/> appropriately depending on which
+             side of the bus the vertex is on.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AssignAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AssignTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)">
+             <summary>
+             Assign final property values for a <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>.
+             </summary>
+             <remarks>
+             This method is commonly overridden in order to provide
+             tree layout properties for particular nodes.
+             This method is called after values have been inherited from other
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es, so you can examine and modify the
+             values of related tree nodes.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            
+             However, when <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.BusBranching"/>,
+             changing the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Sorting"/> or
+             <see cref="P:Northwoods.Go.Layouts.TreeVertex.Comparer"/> properties in this method will have no effect.
+            
+             This method should not walk the tree, since it is called for each
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in a depth-first manner starting at a root.
+            
+             Here is an example where the children are squeezed together if there are many of them,
+             but only on nodes that have no grandchildren.  This makes use of two <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>
+             properties that are automatically computed for you, <see cref="P:Northwoods.Go.Layouts.TreeVertex.ChildrenCount"/> and <see cref="P:Northwoods.Go.Layouts.TreeVertex.DescendantCount"/>.
+             <code language="cs">
+               public class SqueezingTreeLayout : TreeLayout {
+                 public override void AssignTreeVertexValues(TreeVertex v) {
+                   if (v.ChildrenCount &gt; 6 &amp;&amp; v.ChildrenCount == v.DescendantCount) {
+                     v.Alignment = TreeAlignment.BottomRightBus;
+                     v.LayerSpacing = 10;
+                     v.RowSpacing = 0;
+                   }
+                 }
+               }
+             </code>
+            
+             If you need to assign TreeVertex values and also have them be "inherited" by the child vertexes,
+             you should override <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> instead.
+             However at the time that method is called, the computed properties of TreeVertex will not be available.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SortAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SortTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SortTreeVertexChildren(Northwoods.Go.Layouts.TreeVertex)">
+             @hidden @internal
+             <summary>
+             Sort the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Children"/> of a node.
+             </summary>
+             <remarks>
+             The default behavior depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeVertex.Sorting"/>.
+            
+             This method should not walk the tree, since it is called for each
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in a depth-first manner starting at a root.
+             Normally this is called after all of the vertexes have had their values
+             set by <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/>.
+            
+             However, if <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.BusBranching"/>,
+             this will be called before <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/>.
+             The "BusBranching" alignment depends on inheriting the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>,
+             which in turn depends on the sort order, hence sorting must be performed first.
+             The difference is that when "BusBranching" the initialization pass has not yet finished,
+             so informational properties have not yet been computed when this method is called.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AnnotateAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)">
+             <summary>
+             Find any associated objects to be positioned along with the <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/>.
+             </summary>
+             <remarks>
+             This looks for visible <see cref="T:Northwoods.Go.Node"/>"s whose category is "Comment" and
+             that refer to the tree vertex's <see cref="T:Northwoods.Go.Node"/>.
+             This method is only called when <see cref="P:Northwoods.Go.Layouts.TreeLayout.Comments"/> is true.
+            
+             You may want to override this method in order to customize how
+             any associated objects are found and how the node's <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Bounds"/>
+             are set to reserve space for those associated objects.
+             This method should not walk the tree, since it is called for each
+             <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in an indeterminate order.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.IsBusAlignment(Northwoods.Go.Layouts.TreeAlignment)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.IsBusTwoSided(Northwoods.Go.Layouts.TreeAlignment)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.IsLeftSideBus(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutComments(Northwoods.Go.Layouts.TreeVertex)">
+            <summary>
+            Position and <see cref="P:Northwoods.Go.Layouts.TreeVertex.Comments"/> around the vertex.
+            </summary>
+            <remarks>
+            This method should not walk the tree, since it is called for each
+            <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> in an indeterminate order.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutAllTrees">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+            <summary>
+            Recursively lay out a subtree starting with the given parent node.
+            </summary>
+            <remarks>
+            This method should walk the tree recursively.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutTreeNone(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CustomAlignment(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            (undocumented)
+            </summary>
+            <param name="v"></param>
+            <param name="offx"></param>
+            <param name="offy"></param>
+            <param name="subw"></param>
+            <param name="subh"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutBusChildrenPosDir(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex[],System.Double@,System.Double,System.Double@,System.Double@)">
+            @hidden @internal
+            <summary>
+            For a positive direction, we will set up the first half of the children,
+            then the second half, and finally the last odd child, if there is one.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutBusChildrenNegDir(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex[],System.Double@,System.Double,System.Double@,System.Double@)">
+            @hidden @internal
+            <summary>
+            For a negative direction, we will set up the first half of the children,
+            then the second half, and finally the last odd child, if there is one.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ComputeBusNodeSpacing(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+            <summary>
+            Get the amount of space to insert between a child vertex and its parent spine
+            when the parent's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is Bus or BusBranching.
+            </summary>
+            <remarks>
+            This function is called on each child vertex to determine the initial distance of a child
+            from the spine that connects to its parent vertex.
+            This function is not called on the last odd child
+            because that vertex is placed at the end of the spine rather than to either side.
+            </remarks>
+            <returns>By default this returns the parent's <see cref="P:Northwoods.Go.Layouts.TreeVertex.NodeSpacing"/>;
+            a small value may result in unpleasant routing of links,
+            a negative value may cause the node overlaps.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ComputeBusLastRowSpacing(Northwoods.Go.Layouts.TreeVertex,System.Double)">
+            @hidden @internal
+            <summary>
+            Get the amount of space to leave between the sibling child vertexes and this last odd vertex
+            when the parent's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is Bus or BusBranching.
+            </summary>
+            <remarks>
+            This function is called only when there is an odd number of child vertexes.
+            This function is not called when the parent vertex only has one child.
+            In that case there is no spine separating the two columns of child vertexes.
+            </remarks>
+            <param name="lastchild"></param>
+            <param name="dist">the length of the central line (spine) separating the two sides,
+            so far excluding the initial <see cref="P:Northwoods.Go.Layouts.TreeVertex.NodeSpacing"/>
+            that extends form the parent's spine.</param>
+            <returns>By default this returns the parent's <see cref="P:Northwoods.Go.Layouts.TreeVertex.RowSpacing"/>;
+            a negative value may cause node overlaps.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FixRelativePositions(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Boolean,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CalculateSubwidth(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CalculateSubheight(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AlignOffset(Northwoods.Go.Layouts.TreeAlignment,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ShiftRelPosAlign(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeAlignment,System.Double,System.Double,System.Int32,System.Int32)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ShiftRelPos(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double,System.Int32,System.Int32)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.RecordMidPoints(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double)">
+            @hidden @internal
+            <summary>
+            Tell TreeEdges their parent node relative coordinates
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.LayoutTreeBlock(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ShiftFringe(Northwoods.Go.Point[],System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.MergeFringes(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Point[]@,Northwoods.Go.Point[]@,System.Double@,System.Double@)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeUnionLeftY(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeUnionLeftX(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeUnionRightY(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeUnionRightX(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeDistanceY(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FringeDistanceX(Northwoods.Go.Point[],Northwoods.Go.Point[],System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AllocTempPointArray(System.Int32)">
+            @hidden @internal
+            <summary>
+            Arrays of tree fringe points are now pre-allocated with Points, so that they can be re-used too.
+            </summary>
+            <returns>uninitialized array of Points</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.FreeTempPointArray(Northwoods.Go.Point[])">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ArrangeTrees">
+            <summary>
+            Position each separate tree.
+            </summary>
+            <remarks>
+            This is called after each tree has been laid out and thus each subtree
+            bounds are known.
+            The <see cref="P:Northwoods.Go.Layouts.TreeLayout.Arrangement"/> and <see cref="P:Northwoods.Go.Layouts.TreeLayout.ArrangementSpacing"/> and <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>
+            properties affect this method's behavior.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.AssignAbsolutePositions(Northwoods.Go.Layouts.TreeVertex,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CommitLayout">
+            <summary>
+            Set the FromSpot and ToSpot on each Link, position each Node according
+            to the vertex position, and then position/route the Links.
+            </summary>
+            <remarks>
+            This calls the <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitNodes"/> and <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLinks"/> methods, the latter only if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            You should not call this method -- it is a "protected virtual" method.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CommitNodes">
+            <summary>
+            Commit the position of all nodes.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLayout"/>.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLinks"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CommitLayersInternal">
+            @hidden @internal
+            <summary>
+            Call <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLayers(System.Collections.Generic.List{Northwoods.Go.Rect},Northwoods.Go.Point)"/>, but only if all vertexes will be completely aligned in layers across the whole tree.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CommitLayers(System.Collections.Generic.List{Northwoods.Go.Rect},Northwoods.Go.Point)">
+             <summary>
+             This overridable method is called by <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLayout"/>
+             if <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerStyle"/> is LayerUniform
+             to support custom arrangement of bands or labels across each layout layer.
+             </summary>
+             <remarks>
+             By default this method does nothing.
+            
+             The coordinates used in the resulting Rects may need to be offset by the <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>
+             and/or by the arrangement of subtrees done by <see cref="M:Northwoods.Go.Layouts.TreeLayout.ArrangeTrees"/>.
+             </remarks>
+             @expose
+             <param name="layerRects">a List of <see cref="T:Northwoods.Go.Rect"/>s with the bounds of each of the "layers"</param>
+             <param name="offset">the position of the top-left corner of the banded area relative to the coordinates given by the layerRects</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.CommitLinks">
+            <summary>
+            Routes the links.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.TreeLayout.CommitLayout"/>.
+            This is only called if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.TreeLayout.CommitNodes"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SetPortSpotsAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SetPortSpotsTree(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SetPortSpots(Northwoods.Go.Layouts.TreeVertex)">
+             @hidden @internal
+             <summary>
+             Assign port spots for single-port nodes, if <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsPortSpot"/> or
+             <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsChildPortSpot"/> is true, according to the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.PortSpot"/>
+             or <see cref="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot"/>.
+             </summary>
+             <remarks>
+             This iterates over all of the <see cref="T:Northwoods.Go.Layouts.TreeEdge"/>s in the network,
+             and assigns their FromSpot and/or ToSpot property if the
+             <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsPortSpot"/> and/or <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsChildPortSpot"/> properties
+             are true, and if the port's node only has a single port.
+            
+             The spot values are given by <see cref="P:Northwoods.Go.Layouts.TreeLayout.PortSpot"/>
+             and <see cref="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot"/> respectively, unless the value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+             In the latter case the actual spot is determined by the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>
+             of the parent node (the fromVertex).
+             For example, when the angle is zero, the tree grows deeper toward the right.
+             So the fromSpot will be set to <see cref="F:Northwoods.Go.Spot.Right"/>, and the
+             toSpot will be set to <see cref="F:Northwoods.Go.Spot.Left"/>.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.SetPortSpotsBus(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeAlignment)">
+            @hidden @internal
+            <summary>
+            Sets the PortSpots for vertexes with Bus alignments
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.OrthoAngle(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ComputeLayerSpacing(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeLayout.ComputeNodeIndent(Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Roots">
+             <summary>
+             Gets or sets the collection of root vertexes.
+             </summary>
+             <remarks>
+             Initially this will be an empty set.
+            
+             If the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is either <see cref="F:Northwoods.Go.Layouts.TreePath.Destination">Destination</see> or
+             <see cref="F:Northwoods.Go.Layouts.TreePath.Source">Source</see>, this layout can easily
+             determine all of the tree roots by searching the whole network.
+             Otherwise, you should explicitly initialize this collection
+             with one or more <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Path">
+             <summary>
+             Gets or sets how the tree should be constructed from the
+             <see cref="T:Northwoods.Go.Layouts.TreeEdge"/>s connecting <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreePath.Destination"/> or <see cref="F:Northwoods.Go.Layouts.TreePath.Source"/> or <see cref="F:Northwoods.Go.Layouts.TreePath.Default"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreePath.Default"/>,
+             where the value of <see cref="P:Northwoods.Go.Diagram.IsTreePathToChildren"/> determines the effective value of this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle">
+             <summary>
+             Gets or sets the style for the resulting trees.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreeStyle.Layered"/>, <see cref="F:Northwoods.Go.Layouts.TreeStyle.Alternating"/>,
+             <see cref="F:Northwoods.Go.Layouts.TreeStyle.LastParents"/>, or <see cref="F:Northwoods.Go.Layouts.TreeStyle.RootOnly"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeStyle.Layered"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.LayerStyle">
+             <summary>
+             Gets or sets the manner in which the nodes are aligned in layers.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreeLayerStyle.Individual"/>, <see cref="F:Northwoods.Go.Layouts.TreeLayerStyle.Siblings"/>,
+             or <see cref="F:Northwoods.Go.Layouts.TreeLayerStyle.Uniform"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeLayerStyle.Individual"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Comments">
+            <summary>
+            Gets or sets whether this layout should find all <see cref="T:Northwoods.Go.Node"/>s
+            whose category is "Comment" and
+            whose anchors are nodes represented in the network,
+            and increase the size of the corresponding TreeVertex to make room for the comment nodes.
+            </summary>
+            <remarks>
+            The default value is true.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Arrangement">
+             <summary>
+             Gets or sets how <see cref="M:Northwoods.Go.Layouts.TreeLayout.ArrangeTrees"/> should lay out the separate trees.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreeArrangement.Vertical"/>, <see cref="F:Northwoods.Go.Layouts.TreeArrangement.Horizontal"/>,
+             or <see cref="F:Northwoods.Go.Layouts.TreeArrangement.FixedRoots"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeArrangement.Vertical"/>
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.ArrangementSpacing">
+             <summary>
+             Gets or sets the space between which <see cref="M:Northwoods.Go.Layouts.TreeLayout.ArrangeTrees"/> will position the trees.
+             </summary>
+             <remarks>
+             This defaults to the Size(10, 10).
+            
+             This property is ignored if <see cref="P:Northwoods.Go.Layouts.TreeLayout.Arrangement"/> is <see cref="F:Northwoods.Go.Layouts.TreeArrangement.FixedRoots"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults">
+            <summary>
+            Gets or sets the object holding the default values for root <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es.
+            </summary>
+            <remarks>
+            The values for the following inheritable properties are actually stored in this object:
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.Sorting"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.Comparer"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.Angle"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndent"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndentPastParent"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeSpacing"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacingParentOverlap"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.Compaction"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.BreadthLimit"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowSpacing"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowIndent"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.CommentSpacing"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.CommentMargin"/>,
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.SetsPortSpot"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.PortSpot"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.SetsChildPortSpot"/>, <see cref="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot"/>.
+            The other properties of this <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> are ignored.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults">
+            <summary>
+            Gets or sets the object holding the default values for alternate layer <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es,
+            used when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/> is <see cref="F:Northwoods.Go.Layouts.TreeStyle.Alternating">Alternating</see> or <see cref="F:Northwoods.Go.Layouts.TreeStyle.LastParents">LastParents</see>.
+            </summary>
+            <remarks>
+            See the list of inheritable properties in the documentation for <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>.
+            The other properties of this <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> are ignored.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Sorting">
+             <summary>
+             Gets or sets the default sorting policy for ordering the immediate children of a vertex.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreeSorting.Forwards"/>, <see cref="F:Northwoods.Go.Layouts.TreeSorting.Reverse"/>,
+             <see cref="F:Northwoods.Go.Layouts.TreeSorting.Ascending"/>, or <see cref="F:Northwoods.Go.Layouts.TreeSorting.Descending"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeSorting.Forwards"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             The sort order is determined by <see cref="P:Northwoods.Go.Layouts.TreeLayout.Comparer"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Comparer">
+             <summary>
+             Gets or sets the default comparison function used for sorting the immediate children of a vertex.
+             </summary>
+             <remarks>
+             The default comparer compares the <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/> Text values.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             Whether this comparison function is used is determined by the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.Sorting"/>.
+             <code language="cs">
+               new TreeLayout {
+                 Sorting = TreeSorting.Ascending,
+                 Comparer = (va, vb) => {
+                   var da = va.Node.Data as NodeData;
+                   var db = vb.Node.Data as NodeData;
+                   if (da.SomeProperty &lt; db.SomeProperty) return -1;
+                   if (da.SomeProperty &gt; db.SomeProperty) return 1;
+                   return 0;
+                 }
+               }
+             </code>
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Angle">
+             <summary>
+             Gets or sets the default direction for tree growth.
+             </summary>
+             <remarks>
+             The default value is 0; the value must be one of: 0, 90, 180, 270.
+            
+             These values are in degrees, where 0 is along the positive X axis,
+             and where 90 is along the positive Y axis.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Alignment">
+             <summary>
+             Gets or sets the default alignment of parents relative to their children.
+             </summary>
+             <remarks>
+             Must be a value of <see cref="T:Northwoods.Go.Layouts.TreeAlignment"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.CenterChildren"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.NodeIndent">
+             <summary>
+             Gets or sets the default indentation of the first child.
+             </summary>
+             <remarks>
+             The default value is zero.  The value should be non-negative.
+            
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>
+             is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start">Start</see> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End">End</see>.
+             Having a positive value is useful if you want to reserve space
+             at the start of the row of children for some reason.
+             For example, if you want to pretend the parent node is infinitely deep,
+             you can set this to be the breadth of the parent node.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.NodeIndentPastParent">
+             <summary>
+             Gets or sets the fraction of this node's breadth is added to <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndent"/>
+             to determine any spacing at the start of the children.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- the only indentation is specified by <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeIndent"/>.
+             When the value is 1.0, the children will be indented past the breadth of the parent node.
+            
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>
+             is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start">Start</see> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End">End</see>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.NodeSpacing">
+             <summary>
+             Gets or sets the distance between child nodes.
+             </summary>
+             <remarks>
+             This is the distance between sibling nodes.
+             A negative value causes sibling nodes to overlap.
+             The default value is 20.
+            
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> property determines the distance between a parent node and the layer of its children.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing">
+             <summary>
+             Gets or sets the distance between a parent node and its children.
+             </summary>
+             <remarks>
+             This is the distance between a parent node and the layer of its children.
+             Negative values may cause children to overlap with the parent.
+             The default value is 50.
+            
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeSpacing"/> property determines the distance between siblings.
+            
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowSpacing"/> property determines the distance
+             between multiple rows or columns of children.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacingParentOverlap">
+             <summary>
+             Gets or sets the fraction of the node's depth for which the children's layer starts overlapped with the parent's layer.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- there is overlap between layers only if <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> is negative.
+             A value of 1.0 and a zero <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> will cause child nodes to completely overlap the parent.
+            
+             A value greater than zero may still cause overlap between layers,
+             unless the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> is large enough.
+             A value of zero might still allow overlap between layers,
+             if <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> is negative.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.Compaction">
+             <summary>
+             Gets or sets how closely to pack the child nodes of a subtree.
+             </summary>
+             <remarks>
+             Must be either <see cref="F:Northwoods.Go.Layouts.TreeCompaction.Block"/> or <see cref="F:Northwoods.Go.Layouts.TreeCompaction.None"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeCompaction.Block">Block</see>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.BreadthLimit">
+             <summary>
+             Gets or sets a limit on how broad a tree should be.
+             </summary>
+             <remarks>
+             A value of zero (the default) means there is no limit;
+             a positive value specifies a limit.
+             The default value is zero.
+            
+             This property is just a suggested constraint on how
+             broadly the tree will be laid out.
+             When there isn't enough breadth for all of the children of a node,
+             the children are placed in as many rows as needed to try to stay
+             within the given breadth limit.
+             If the value is too small, since this layout algorithm
+             does not modify the size or shape of any node, the nodes will
+             just be laid out in a line, one per row, and the breadth is
+             determined by the broadest node.
+             The distance between rows is specified by <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowSpacing"/>.
+             To make room for the links that go around earlier rows to get to
+             later rows, when the alignment is not a "center" alignment, the
+             <see cref="P:Northwoods.Go.Layouts.TreeLayout.RowIndent"/> property specifies that space at the
+             start of each row.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.RowSpacing">
+             <summary>
+             Gets or sets the distance between rows or columns of a parent node's immediate children.
+             </summary>
+             <remarks>
+             The default value is 25.
+            
+             This property is only used when there is more than one
+             row of children for a given parent node.
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.NodeSpacing"/> property determines the distance between siblings.
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerSpacing"/> property determines the distance between
+             the parent node and its first row or column of child nodes.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.RowIndent">
+             <summary>
+             Gets or sets the default indentation of the first child of each row,
+             if the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> is not a "Center" alignment.
+             </summary>
+             <remarks>
+             The default value is 10.  The value should be non-negative.
+            
+             This is used to leave room for the links that connect a parent node
+             with the child nodes that are in additional rows.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.CommentSpacing">
+             <summary>
+             Gets or sets the distance between comments.
+             </summary>
+             <remarks>
+             The default value is 10.
+            
+             This is used by <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> and <see cref="M:Northwoods.Go.Layouts.TreeLayout.LayoutComments(Northwoods.Go.Layouts.TreeVertex)"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.CommentMargin">
+             <summary>
+             Gets or sets the distance between a node and its comments.
+             </summary>
+             <remarks>
+             The default value is 20.
+            
+             This is used by <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> and <see cref="M:Northwoods.Go.Layouts.TreeLayout.LayoutComments(Northwoods.Go.Layouts.TreeVertex)"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.SetsPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the
+             FromSpot for this parent node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spot of the port of this node, the parent,
+             if the node has only a single port.
+            
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.PortSpot"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.PortSpot">
+             <summary>
+             Gets or sets the spot that this node's port gets as its FromSpot.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a FromSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source">Source</see>,
+             the port's ToSpot is set instead of the FromSpot.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.SetsChildPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the
+             ToSpot for each child node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spot of the ports of the children nodes,
+             if the node has only a single port.
+            
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.ChildPortSpot">
+             <summary>
+             Gets or sets the spot that children nodes' ports get as their ToSpot.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a ToSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source">Source</see>,
+             the port's FromSpot is set instead of the ToSpot.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateSorting">
+             <summary>
+             Gets or sets the alternate sorting policy for ordering the immediate children of a vertex.
+             </summary>
+             <remarks>
+             Must be <see cref="F:Northwoods.Go.Layouts.TreeSorting.Forwards"/>, <see cref="F:Northwoods.Go.Layouts.TreeSorting.Reverse"/>,
+             <see cref="F:Northwoods.Go.Layouts.TreeSorting.Ascending"/>, or <see cref="F:Northwoods.Go.Layouts.TreeSorting.Descending"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeSorting.Forwards">Forwards</see>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             The sort order is determined by <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateComparer"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateComparer">
+             <summary>
+             Gets or sets the alternate comparison function used for sorting the immediate children of a vertex.
+             </summary>
+             <remarks>
+             The default comparer compares the <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/> Text values.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             Whether this comparison function is used is determined by the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateSorting"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateAngle">
+             <summary>
+             Gets or sets the alternate direction for tree growth.
+             </summary>
+             <remarks>
+             The default value is 0; the value must be one of: 0, 90, 180, 270.
+            
+             These values are in degrees, where 0 is along the positive X axis,
+             and where 90 is along the positive Y axis.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateAlignment">
+             <summary>
+             Gets or sets the alternate alignment of parents relative to their children.
+             </summary>
+             <remarks>
+             Must be a value of <see cref="T:Northwoods.Go.Layouts.TreeAlignment"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.CenterChildren"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeIndent">
+             <summary>
+             Gets or sets the alternate indentation of the first child.
+             </summary>
+             <remarks>
+             The default value is zero.  The value should be non-negative.
+            
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>
+             is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start">Start</see> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End">End</see>.
+             Having a positive value is useful if you want to reserve space
+             at the start of the row of children for some reason.
+             For example, if you want to pretend the parent node is infinitely deep,
+             you can set this to be the breadth of the parent node.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeIndentPastParent">
+             <summary>
+             Gets or sets the fraction of this node's breadth is added to <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeIndent"/>
+             to determine any spacing at the start of the children.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- the only indentation is specified by <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeIndent"/>.
+             When the value is 1.0, the children will be indented past the breadth of the parent node.
+            
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/>
+             is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start">Start</see> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End">End</see>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeSpacing">
+             <summary>
+             Gets or sets the alternate distance between child nodes.
+             </summary>
+             <remarks>
+             The default value is 20.
+            
+             A negative value causes sibling nodes to overlap.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing">
+             <summary>
+             Gets or sets the alternate distance between a parent node and its children.
+             </summary>
+             <remarks>
+             The default value is 50.
+            
+             This is the distance between a parent node and its first row
+             of children, in case there are multiple rows of its children.
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateNodeSpacing"/> property determines the distance between siblings.
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateRowSpacing"/> property determines the distance
+             between rows of children.
+             Negative values may cause children to overlap with the parent.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacingParentOverlap">
+             <summary>
+             Gets or sets the alternate fraction of the node's depth for which the children's layer starts overlapped with the parent's layer.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- there is overlap between layers only if <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/> is negative.
+             A value of 1.0 and a zero <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/> will cause child nodes to completely overlap the parent.
+            
+             A value greater than zero may still cause overlap between layers,
+             unless the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/> is large enough.
+             A value of zero might still allow overlap between layers,
+             if <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/> is negative.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateCompaction">
+             <summary>
+             Gets or sets how closely to pack the child nodes of a subtree.
+             </summary>
+             <remarks>
+             Must be either <see cref="F:Northwoods.Go.Layouts.TreeCompaction.Block"/> or <see cref="F:Northwoods.Go.Layouts.TreeCompaction.None"/>.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeCompaction.Block"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateBreadthLimit">
+             <summary>
+             Gets or sets an alternate limit on how broad a tree should be.
+             </summary>
+             <remarks>
+             A value of zero (the default) means there is no limit;
+             a positive value specifies a limit.
+             The default value is zero.
+            
+             This property is just a suggested constraint on how
+             broadly the tree will be laid out.
+             When there isn't enough breadth for all of the children of a node,
+             the children are placed in as many rows as needed to try to stay
+             within the given breadth limit.
+             If the value is too small, since this layout algorithm
+             does not modify the size or shape of any node, the nodes will
+             just be laid out in a line, one per row, and the breadth is
+             determined by the broadest node.
+             The distance between rows is specified by <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateRowSpacing"/>.
+             To make room for the links that go around earlier rows to get to
+             later rows, when the alignment is not a "center" alignment, the
+             <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateRowIndent"/> property specifies that space at the
+             start of each row.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateRowSpacing">
+             <summary>
+             Gets or sets the alternate distance between rows of children.
+             </summary>
+             <remarks>
+             The default value is 25.
+            
+             This property is only used when there is more than one
+             row of children for a given parent node.
+             The <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateLayerSpacing"/> property determines the distance between
+             the parent node and its first row of child nodes.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateRowIndent">
+             <summary>
+             Gets or sets the alternate indentation of the first child of each row,
+             if the <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> is not a "Center" alignment.
+             </summary>
+             <remarks>
+             The default value is 10.  The value should be non-negative.
+            
+             This is used to leave room for the links that connect a parent node
+             with the child nodes that are in additional rows.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateCommentSpacing">
+             <summary>
+             Gets or sets the alternate distance between comments.
+             </summary>
+             <remarks>
+             The default value is 10.
+            
+             This is used by <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> and <see cref="M:Northwoods.Go.Layouts.TreeLayout.LayoutComments(Northwoods.Go.Layouts.TreeVertex)"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateCommentMargin">
+             <summary>
+             Gets or sets the alternate distance between a node and its comments.
+             </summary>
+             <remarks>
+             The default value is 20.
+            
+             This is used by <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/> and <see cref="M:Northwoods.Go.Layouts.TreeLayout.LayoutComments(Northwoods.Go.Layouts.TreeVertex)"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateSetsPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the
+             FromSpot for this parent node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spot of the port of this node, the parent,
+             if the node has only a single port.
+            
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternatePortSpot"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternatePortSpot">
+             <summary>
+             Gets or sets the alternate spot that this node's port gets as its FromSpot.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a FromSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source">Source</see>,
+             the port's ToSpot is set instead of the FromSpot.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateSetsChildPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the
+             ToSpot for each child node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spot of the ports of the children nodes,
+             if the node has only a single port.
+            
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateChildPortSpot"/>.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeLayout.AlternateChildPortSpot">
+             <summary>
+             Gets or sets the alternate spot that children nodes' ports get as their ToSpot.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a ToSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+            
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source">Source</see>,
+             the port's FromSpot is set instead of the ToSpot.
+            
+             This sets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>" property of the same name.
+             </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreePath">
+            <summary>
+            This enumeration specifies how to build a tree from the <see cref="T:Northwoods.Go.Layouts.TreeNetwork"/>.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreePath.Default">
+            <summary>
+            Causes the value of <see cref="P:Northwoods.Go.Diagram.IsTreePathToChildren"/>
+            to effectively choose either <see cref="F:Northwoods.Go.Layouts.TreePath.Destination"/> (if true) or <see cref="F:Northwoods.Go.Layouts.TreePath.Source"/> (if false).
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreePath.Destination">
+             <summary>
+             The children of a <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> are its <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.DestinationVertexes"/>,
+             the collection of connected <see cref="P:Northwoods.Go.Layouts.Network`3.Edge.ToVertex"/>es;
+             this value is used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/>.
+            
+             The tree roots are those <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es that have zero source edges.
+             </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreePath.Source">
+             <summary>
+             The children of a <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> are its <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.SourceVertexes"/>,
+             the collection of connected <see cref="P:Northwoods.Go.Layouts.Network`3.Edge.FromVertex"/>es;
+             this value is used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/>.
+            
+             The tree roots are those <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es that have zero destination edges.
+             </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeSorting">
+            <summary>
+            This enumeration specifies whether to sort the children of a node,
+            and in what order to position them.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Sorting"/> or <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateSorting"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeSorting.Forwards">
+            <summary>
+            Lay out each child in the order in which they were found.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeSorting.Reverse">
+            <summary>
+            Lay out each child in reverse order from which they were found.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeSorting.Ascending">
+            <summary>
+            Lay out each child according to the sort order given by <see cref="P:Northwoods.Go.Layouts.TreeVertex.Comparer"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeSorting.Descending">
+            <summary>
+            Lay out each child in reverse sort order given by <see cref="P:Northwoods.Go.Layouts.TreeVertex.Comparer"/>.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeAlignment">
+            <summary>
+            This enumeration specifies how to position a parent <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>
+            relative to its children, or how to align children in a bus.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Alignment"/> or <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateAlignment"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.CenterChildren">
+            <summary>
+            The parent is centered at the middle of the range of its immediate child nodes.
+            </summary>
+            <remarks>
+            When there is a breadth limit that causes there to be multiple rows,
+            the links that extend from the parent to those children in rows past
+            the first one may cross over the nodes that are in earlier rows.
+            </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.CenterSubtrees">
+            <summary>
+            The parent is centered at the middle of the range of its child subtrees.
+            </summary>
+            <remarks>
+            When there is a breadth limit that causes there to be multiple rows,
+            the links that extend from the parent to those children in rows past
+            the first one may cross over the nodes that are in earlier rows.
+            </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.Start">
+            <summary>
+            The parent is positioned near the first of its children.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.End">
+            <summary>
+            The parent is positioned near the last of its children.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.Bus">
+             <summary>
+             The children are positioned in a bus on both sides of an "aisle" where the links to them go,
+             with the last odd child (if any) placed at the end of the aisle in the middle.
+             </summary>
+             <remarks>
+             The children, if they are themselves parents, continue at the same inherited angle;
+             use <see cref="F:Northwoods.Go.Layouts.TreeAlignment.BusBranching"/> if you want grandchildren to proceed growing in
+             the different angle as determined by the side.
+            
+             A bus does not take <see cref="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit"/> into account.
+             </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.BusBranching">
+             <summary>
+             Like <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Bus"/> with the children arranged on both sides of an "aisle"
+             with any last odd child placed at the end of the aisle,
+             but the children get an <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/> that depends on which side of the aisle
+             they were placed.
+             </summary>
+             <remarks>
+             This only works well when the <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/> is <see cref="F:Northwoods.Go.Layouts.TreeStyle.Layered"/>.
+            
+             A bus does not take <see cref="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit"/> into account.
+             </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.TopLeftBus">
+            <summary>
+            The children are positioned in a bus, only on the top or left side of the parent.
+            </summary>
+            <remarks>
+            A bus does not take <see cref="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit"/> into account.
+            </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeAlignment.BottomRightBus">
+            <summary>
+            The children are positioned in a bus, only on the bottom or right side of the parent.
+            </summary>
+            <remarks>
+            A bus does not take <see cref="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit"/> into account.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeCompaction">
+            <summary>
+            This enumeration specifies how closely packed the children of a node should be.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Compaction"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeCompaction.None">
+            <summary>
+            Only simple placement of children next to each other, as determined by their subtree breadth.
+            </summary>
+            <remarks>
+            For any node, there will not be another node at any depth occupying the same breadth position,
+            unless there are multiple rows;  In other words, if there is no breadth limit resulting in
+            multiple rows, with this compaction mode it is as if every node were infinitely deep.
+            </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeCompaction.Block">
+            <summary>
+            A simple fitting of subtrees.
+            </summary>
+            <remarks>
+            This mode produces more compact trees -- often nicer looking too;
+            Nodes will not overlap each other, unless you have negative values
+            for some of the spacing properties;
+            However it is possible when the links are orthogonally styled that
+            occasionally the subtrees will be placed so close together that some
+            links may overlap the links or even the nodes of other subtrees.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeStyle">
+            <summary>
+            This enumeration specifies the general style in which the nodes are laid out.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.TreeStyle"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeStyle.Layered">
+            <summary>
+            The normal tree style, where all of the children of each <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> are lined up
+            horizontally or vertically.
+            </summary>
+            <remarks>
+            Each <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> gets its properties from its parent node;
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/> is used for all default <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> property values;
+            <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/> is ignored.
+            </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeStyle.LastParents">
+             <summary>
+             Just like the standard layered tree style, except that the nodes with children but no grandchildren
+             have alternate properties.
+             </summary>
+             <remarks>
+             Each <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> gets its properties from its parent node;
+             However, for those nodes whose <see cref="P:Northwoods.Go.Layouts.TreeVertex.MaxGenerationCount"/> is 1,
+             in other words when it has children but no grandchildren,
+             the properties are copied from <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>.
+            
+             If the tree only has two levels, the root node gets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>.
+             </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeStyle.Alternating">
+             <summary>
+             Alternate layers of the tree have different properties, typically including the angle.
+             </summary>
+             <remarks>
+             Each <see cref="T:Northwoods.Go.Layouts.TreeVertex"/> gets its properties from its grandparent node;
+             The root nodes get their defaults from <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/>.
+            
+             The immediate children of root nodes get their defaults from <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/>.
+            
+             Depending on the properties used, it is possible for some link routes to cross over nodes.
+             </remarks>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeStyle.RootOnly">
+            <summary>
+            All of the nodes get the alternate properties, except the root node gets the default properties.
+            </summary>
+            <remarks>
+            The root node gets the <see cref="P:Northwoods.Go.Layouts.TreeLayout.RootDefaults"/> properties,
+            the root node's children get the <see cref="P:Northwoods.Go.Layouts.TreeLayout.AlternateDefaults"/> properties,
+            and all the rest of the <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es get their properties from their parent node.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeArrangement">
+            <summary>
+            This enumeration specifies how to position the resulting trees in the document.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.Arrangement"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeArrangement.Vertical">
+            <summary>
+            Position each tree in a non-overlapping fashion by increasing Y coordinates,
+            starting at the <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeArrangement.Horizontal">
+            <summary>
+            Position each tree in a non-overlapping fashion by increasing X coordinates,
+            starting at the <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeArrangement.FixedRoots">
+            <summary>
+            Do not move each root node, but position all of their descendants relative to their root.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeLayerStyle">
+            <summary>
+            This enumeration specifies the manner in which nodes are placed into layers.
+            Used for <see cref="P:Northwoods.Go.Layouts.TreeLayout.LayerStyle"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeLayerStyle.Individual">
+            <summary>
+            The normal layer style, where each node takes up only the depth that it needs.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeLayerStyle.Siblings">
+            <summary>
+            A layer style where all of the children of a parent node take up the same amount of depth --
+            this typically causes all cousins to be aligned.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.TreeLayerStyle.Uniform">
+            <summary>
+            A layer style where all nodes with the same <see cref="P:Northwoods.Go.Layouts.TreeVertex.Level"/> throughout the tree take up the same amount of depth --
+            if the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/> is the same for all nodes, this will result in all nodes in the same layer to be aligned.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeNetwork">
+            <summary>
+            This class represents an abstract graph of <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es and <see cref="T:Northwoods.Go.Layouts.TreeEdge"/>s
+            that can be constructed based on the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of a <see cref="T:Northwoods.Go.Diagram"/>
+            so that the <see cref="T:Northwoods.Go.Layouts.TreeLayout"/> can operate independently of the diagram until it
+            is time to commit any node positioning or link routing.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeNetwork.#ctor(Northwoods.Go.Layouts.TreeLayout)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.#ctor(`2)"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeNetwork.CreateVertex">
+            <inheritdoc/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeNetwork.CreateEdge">
+            <inheritdoc/>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeVertex">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.TreeLayout"/>-specific information about <see cref="T:Northwoods.Go.Node"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Vertex"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeVertex.#ctor(Northwoods.Go.Layouts.TreeNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Vertex.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeVertex.CopyInheritedPropertiesFrom(Northwoods.Go.Layouts.TreeVertex)">
+            <summary>
+            Copy inherited properties from another TreeVertex to this one.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Initialized">
+            <summary>
+            Gets or sets whether this node has been initialized as part of <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/> when building the tree structures.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Parent">
+             <summary>
+             Gets or sets the logical parent for this node.
+             </summary>
+             <remarks>
+             The default value is null.
+            
+             This structural property is computed in <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/> when building the tree structures.
+             You should probably not be setting this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Children">
+             <summary>
+             Gets or sets the logical children for this node.
+             </summary>
+             <remarks>
+             The default value is an empty array.
+            
+             This structural property is computed in <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/> when building the tree structures.
+             You should probably not be setting this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Level">
+             <summary>
+             Gets or sets the number of single-parent ancestors this node has.
+             </summary>
+             <remarks>
+             This could also be interpreted as which layer this node is in.
+             A root node will have a value of zero.
+            
+             This informational property is computed in <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/> when building the tree structures.
+             You should probably not be setting this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.DescendantCount">
+             <summary>
+             Gets or sets the number of descendants this node has.
+             </summary>
+             <remarks>
+             For a leaf node, this will be zero.
+            
+             This informational property is computed as part of the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             You should probably not be setting this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.MaxChildrenCount">
+             <summary>
+             Gets or sets the maximum number of children of any descendant of this node.
+             </summary>
+             <remarks>
+             For a leaf node, this will be zero.
+            
+             This informational property is computed as part of the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             You should probably not be setting this property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.MaxGenerationCount">
+             <summary>
+             Gets or sets the maximum depth of the subtrees below this node.
+             </summary>
+             <remarks>
+             For a leaf node, this will be zero.
+            
+             This informational property is computed as part of the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             You should probably not be setting this value.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Comments">
+             <summary>
+             Gets or sets an array of <see cref="T:Northwoods.Go.Node"/>s that will be positioned near this node.
+             </summary>
+             <remarks>
+             The default value is null.
+            
+             These objects should not have their own <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>es to be laid out.
+             Typically these will be <see cref="T:Northwoods.Go.Node"/>s whose Category is "Comment".
+             This array should be allocated and initialized in <see cref="M:Northwoods.Go.Layouts.TreeLayout.AddComments(Northwoods.Go.Layouts.TreeVertex)"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Sorting">
+             <summary>
+             Gets or sets whether and in what order the children should be sorted.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeSorting.Forwards"/>.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Comparer">
+            <summary>
+            Gets or sets how the children should be sorted.
+            </summary>
+            <remarks>
+            This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Angle">
+             <summary>
+             Gets or sets the absolute angle at which this subtree should grow from this vertex.
+             </summary>
+             <remarks>
+             The default value is zero, meaning that general tree growth should proceed rightwards along the X axis.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             By default this is the same as the Angle of the parent <see cref="T:Northwoods.Go.Layouts.TreeVertex"/>.
+             However, after the initial propagation of property values, perhaps in
+             an override of <see cref="M:Northwoods.Go.Layouts.TreeLayout.AssignTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/>,
+             you could just set this property to specify the angle at which this node grows its subtrees.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Alignment">
+             <summary>
+             Gets or sets how this parent node should be aligned relative to its children.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeAlignment.CenterChildren"/>.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.NodeIndent">
+             <summary>
+             Gets or sets the distance the first child should be indented.
+             </summary>
+             <remarks>
+             The default value is zero. The value should be non-negative.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is
+             <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start"/> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.NodeIndentPastParent">
+             <summary>
+             Gets or sets whether the first child should be indented past the parent node's breadth.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- the only start or end spacing is provided by <see cref="P:Northwoods.Go.Layouts.TreeVertex.NodeIndent"/>.
+             Values must range from 0.0 to 1.0, where 1.0 means the full breadth of this node.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             This property is only sensible when the <see cref="P:Northwoods.Go.Layouts.TreeVertex.Alignment"/> is
+             <see cref="F:Northwoods.Go.Layouts.TreeAlignment.Start"/> or <see cref="F:Northwoods.Go.Layouts.TreeAlignment.End"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.NodeSpacing">
+             <summary>
+             Gets or sets the distance between child nodes.
+             </summary>
+             <remarks>
+             The default value is 20.
+            
+             A negative value will cause sibling nodes to overlap.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.LayerSpacing">
+             <summary>
+             Gets or sets the distance between this node and its children.
+             </summary>
+             <remarks>
+             The default value is 50.
+            
+             Negative values may cause children to overlap with the parent.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.LayerSpacingParentOverlap">
+             <summary>
+             Gets or sets the fraction of this node's depth that may overlap with the children's layer.
+             </summary>
+             <remarks>
+             The default value is 0.0 -- there is overlap only if <see cref="P:Northwoods.Go.Layouts.TreeVertex.LayerSpacing"/> is negative.
+             Values must range from 0.0 to 1.0, where 1.0 means the full depth of this node.
+            
+             When this value is greater than 0.0, there might not be overlap if <see cref="P:Northwoods.Go.Layouts.TreeVertex.LayerSpacing"/>
+             is larger than the depth of this node times this fraction.
+             Even when this value is 0.0, there may be overlap when <see cref="P:Northwoods.Go.Layouts.TreeVertex.LayerSpacing"/> is negative.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.Compaction">
+             <summary>
+             Gets or sets how the children of this node should be packed together.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Layouts.TreeCompaction.Block"/>.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit">
+             <summary>
+             Gets or sets how broad a node and its descendants should be.
+             </summary>
+             <remarks>
+             By default this is zero.  A value of zero imposes no limit;
+             a positive value will specify a limit for the total width of this subtree.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.RowSpacing">
+             <summary>
+             Gets or sets the distance between rows within one layer, all sharing the same parent.
+             </summary>
+             <remarks>
+             The default value is 25.
+            
+             Negative values may cause nodes to overlap.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.RowIndent">
+             <summary>
+             Gets or sets the distance the first child of each row should be indented.
+             </summary>
+             <remarks>
+             The default value is 10.  The value should be non-negative.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             This property is only used when the <see cref="P:Northwoods.Go.Layouts.TreeVertex.BreadthLimit"/> is positive,
+             and some initial space needs to be reserved in each row of nodes for the links
+             that are routed around those rows.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.CommentSpacing">
+             <summary>
+             Gets or sets the space to leave between consecutive comments.
+             </summary>
+             <remarks>
+             The default value is 10.
+            
+             Negative values may cause comments to overlap.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.CommentMargin">
+             <summary>
+             Gets or sets the space to leave between the node and the comments.
+             </summary>
+             <remarks>
+             The default value is 20.
+            
+             Negative values may cause comments to overlap with the node.
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.SetsPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the FromSpot for this parent node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spot of the port of this node, the parent,
+             if the node has only a single port.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeVertex.PortSpot"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.PortSpot">
+             <summary>
+             Gets or sets the spot that this node's port gets as its FromSpot,
+             if <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsPortSpot"/> is true and the node has only a single port.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a FromSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source"/>, the port's ToSpot is set instead of the FromSpot.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.SetsChildPortSpot">
+             <summary>
+             Gets or sets whether the TreeLayout should set the ToSpot for each child node port.
+             </summary>
+             <remarks>
+             The default value is true -- this may modify the spots of the ports of the children nodes,
+             if the node has only a single port.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             The spot used depends on the value of <see cref="P:Northwoods.Go.Layouts.TreeVertex.ChildPortSpot"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.ChildPortSpot">
+             <summary>
+             Gets or sets the spot that children nodes' ports get as their ToSpot,
+             if <see cref="P:Northwoods.Go.Layouts.TreeVertex.SetsChildPortSpot"/> is true and the node has only a single port.
+             </summary>
+             <remarks>
+             The default value is <see cref="F:Northwoods.Go.Spot.Default"/>.
+            
+             This inherited property is initialized in the <see cref="M:Northwoods.Go.Layouts.TreeLayout.InitializeTreeVertexValues(Northwoods.Go.Layouts.TreeVertex)"/> pass.
+             A value of <see cref="F:Northwoods.Go.Spot.Default"/> will cause the TreeLayout
+             to assign a ToSpot based on the parent node's <see cref="P:Northwoods.Go.Layouts.TreeVertex.Angle"/>.
+             If the value is other than NoSpot, it is just assigned.
+             When <see cref="P:Northwoods.Go.Layouts.TreeLayout.Path"/> is <see cref="F:Northwoods.Go.Layouts.TreePath.Source"/>, the port's FromSpot is set instead of the ToSpot.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.ChildrenCount">
+            <summary>
+            This read-only property returns the number of immediate children this node has.
+            </summary>
+            <remarks>
+            The default value is zero.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.RelativePosition">
+            <summary>
+            Gets or sets the position of this node relative to its parent node.
+            </summary>
+            <remarks>
+            This informational property is computed during <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/>.
+            You should probably not be setting this property.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.SubtreeSize">
+            <summary>
+            Gets or sets the size of the subtree (including all descendants) parented by this node.
+            </summary>
+            <remarks>
+            This informational property is computed during <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/>.
+            Of course if there are no children, this is just the same as Size.
+            You should probably not be setting this property.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeVertex.SubtreeOffset">
+            <summary>
+            Gets or sets the offset of this parent node relative to its whole subtree.
+            </summary>
+            <remarks>
+            This informational property is computed during <see cref="M:Northwoods.Go.Layouts.TreeLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/>.
+            Of course if there are no children, this is just (0, 0).
+            You should probably not be setting this property.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.TreeEdge">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.TreeLayout"/>-specific information about <see cref="T:Northwoods.Go.Link"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Edge"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeEdge.#ctor(Northwoods.Go.Layouts.TreeNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Edge.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeEdge.Commit">
+            <summary>
+            Commits the position of the Link and routes it.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.TreeEdge.AdjustRouteForAngleChange(Northwoods.Go.Layouts.TreeVertex,Northwoods.Go.Layouts.TreeVertex)">
+            @hidden @internal
+        </member>
+        <member name="P:Northwoods.Go.Layouts.TreeEdge.RelativePoint">
+            <summary>
+            Gets or sets a Point, relative to the parent node,
+            that may be useful in routing this link.
+            </summary>
+        </member>
+    </members>
+</doc>

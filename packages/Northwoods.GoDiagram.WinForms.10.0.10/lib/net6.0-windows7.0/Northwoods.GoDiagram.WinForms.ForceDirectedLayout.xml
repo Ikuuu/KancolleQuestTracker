@@ -1,0 +1,622 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Northwoods.GoDiagram.WinForms.ForceDirectedLayout</name>
+    </assembly>
+    <members>
+        <member name="T:Northwoods.Go.Layouts.ForceDirectedLayout">
+             <summary>
+             Force-directed layout treats the graph as if it were a system of physical bodies
+             with repulsive electrical, attractional gravitational, and spring forces acting on them and between them.
+             </summary>
+             <remarks>
+             Electrical forces come both from the field at the vertex's location as well as from neighboring vertexes and are quadratic by distance.
+             Gravitational forces come from the field at the vertex's location and are constant.
+             Spring forces are only exerted between two different vertexes that are connected by an edge and are linear by distance.
+            
+             The electrical forces on a vertex are the sum of the electrical charge times the electrical field at that location
+             (<see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalCharge(Northwoods.Go.Layouts.ForceDirectedVertex)"/>, <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalFieldX(System.Double,System.Double)"/>, <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalFieldY(System.Double,System.Double)"/>)
+             and the electrical forces of all nearby vertexes divided by the square of the distance between them.
+             You can easily assign the electrical charge for all vertexes by assigning <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultElectricalCharge"/>.
+             By default there is no electrical field, so all forces are due to nearby charged vertexes.
+             For efficiency, <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.InfinityDistance"/> determines a cut-off distance between vertexes for which to consider any influence.
+            
+             The gravitational forces on a vertex are the sum of the gravitational mass times the gravitational field at that location
+             (<see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalMass(Northwoods.Go.Layouts.ForceDirectedVertex)"/>, <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalFieldX(System.Double,System.Double)"/>, <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalFieldY(System.Double,System.Double)"/>).
+             You can easily assign the gravitational mass for all vertexes by assigning <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultGravitationalMass"/>.
+             By default there is no gravitational field.
+            
+             The spring forces on a vertex are only exerted by the edges connecting it with other vertexes.
+             The force along an edge is the stiffness of the spring times the difference of the distance between the vertexes and the nominal length of the spring
+             (<see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringStiffness(Northwoods.Go.Layouts.ForceDirectedEdge)"/>, <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)"/>) divided by the distance between the vertexes.
+             When the distance is less than the nominal length, the force pushes the vertexes apart; when the distance is greater, the force pulls them together.
+             You can easily assign the spring length and stiffness for all edges by assigning <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringLength"/> and <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringStiffness"/>.
+            
+             When the distance between two vertexes is less than one unit, this uses a random number generator to decide which direction the forces should go.
+             For layouts that start with all of the vertexes at the same location, this results in potentially dramatically different results.
+             Set <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.RandomNumberGenerator"/> to null in order to produce reproducible results given the same initial vertex locations.
+            
+             The algorithm seeks a configuration of the bodies with locally minimal energy,
+             i.e. vertex positions such that the sum of the forces on each vertex is zero.
+             This is achieved by repeatedly computing the forces on each vertex, moving them, and repeating.
+             Computations stop when no vertex moves more than <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.EpsilonDistance"/> or when <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.MaxIterations"/> have happened.
+            
+             The layout cannot guarantee that it provides optimal positioning of nodes.
+             Nodes will normally not overlap each other, but when there is a dense interconnectivity overlaps might not be avoidable.
+            
+             <p class="boxrun">
+             If you want to experiment interactively with most of the properties, try the Force Directed Layout sample.
+             See samples that make use of ForceDirectedLayout in the <a href="../../samples/index.Html#forcedirectedlayout">samples index</a>.
+             </p>
+            
+             This layout makes use of a <see cref="T:Northwoods.Go.Layouts.Network`3"/> of
+             <see cref="T:Northwoods.Go.Layouts.ForceDirectedVertex"/>es and <see cref="T:Northwoods.Go.Layouts.ForceDirectedEdge"/>s that normally
+             correspond to the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of the <see cref="T:Northwoods.Go.Diagram"/>.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.#ctor">
+            <summary>
+            Constructs a <see cref="T:Northwoods.Go.Layouts.ForceDirectedLayout"/> with no <see cref="P:Northwoods.Go.Layouts.NetworkLayout`4.Network"/>
+            and with no owning <see cref="P:Northwoods.Go.Layouts.Layout.Diagram"/>.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.CloneProtected(Northwoods.Go.Layouts.Layout)">
+            <summary>
+            Copies properties to a cloned Layout.
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})">
+             <summary>
+             Perform the force-directed layout.
+             </summary>
+             <remarks>
+             This removes any reflexive edges in the network, since they should be ignored.
+            
+             For each vertex this calls and remembers the result of <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalCharge(Northwoods.Go.Layouts.ForceDirectedVertex)"/> as the <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.Charge"/>
+             and the result of <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalMass(Northwoods.Go.Layouts.ForceDirectedVertex)"/> as the <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.Mass"/>.
+            
+             For each edge this calls and remembers the result of <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringStiffness(Northwoods.Go.Layouts.ForceDirectedEdge)"/> as the <see cref="P:Northwoods.Go.Layouts.ForceDirectedEdge.Stiffness"/>
+             and the result of <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)"/> as the <see cref="P:Northwoods.Go.Layouts.ForceDirectedEdge.Length"/>.
+            
+             This then iterates, updating the position of each vertex according to the forces upon it,
+             until reaching <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.MaxIterations"/> or until no vertex moves more than about <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.EpsilonDistance"/>.
+            
+             Finally this calls <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> to commit the Node positions from the vertex positions.
+             <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> calls <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLayout"/> within a transaction.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.NeedsClusterLayout">
+            @hidden @internal
+            <summary>
+            Determines whether a clustering layout should be done before the regular force-directed layout.
+            </summary>
+            <remarks>
+            A clustering layout is useful when the graph is somewhat tree-like.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ComputeBounds(Northwoods.Go.Layouts.ForceDirectedNetwork)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ComputeClusterLayoutIterations(System.Int32,System.Double)">
+            @hidden @internal
+            <summary>
+            Determine how many additional force-directed layout iterations should occur for this clustered network.
+            </summary>
+            <param name="level">the recursion depth for clustered layout.</param>
+            <param name="maxiter"></param>
+            <returns>a non-negative int that will be temporarily added to <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.MaxIterations"/>.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.InitializeClustering">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.LayoutClusters(System.Int32,System.Int32)">
+            @hidden @internal
+            <param name="level">the recursion depth for clustered layout.</param>
+            <param name="maxiter"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.HasClusters(System.Int32)">
+            @hidden @internal
+            <summary>
+            Determines if the a layer has clusters.
+            </summary>
+            <remarks>
+            A layer has clusters if it has more than one vertex with vertex.NumConnections > 1.
+            </remarks>
+            <param name="level">the recursion depth for clustered layout.</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.PushSubNetwork(System.Int32)">
+            @hidden @internal
+            <param name="level">the recursion depth for clustered layout.</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.PopNetwork(Northwoods.Go.Layouts.ForceDirectedNetwork,System.Int32)">
+            @hidden @internal
+            <param name="oldnet"></param>
+            <param name="level">the recursion depth for clustered layout.</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.SurroundNode(Northwoods.Go.Layouts.ForceDirectedVertex,System.Double)">
+            @hidden @internal
+            <param name="vertex"></param>
+            <param name="level">the recursion depth for clustered layout.</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ArrangeConnectedGraphs(System.Collections.Generic.IEnumerator{Northwoods.Go.Layouts.ForceDirectedNetwork},Northwoods.Go.Layouts.ForceDirectedNetwork)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ClosestFringePoint(Northwoods.Go.Point[],System.Double,System.Double,System.Double,System.Double,System.Double,Northwoods.Go.Size)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.AnnotateAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.AddComments(Northwoods.Go.Layouts.ForceDirectedVertex)">
+             <summary>
+             Find any associated objects to be positioned along with the <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/>.
+             </summary>
+             <remarks>
+             This method is called for each vertex in the network, when <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.Comments"/> is true.
+             The standard behavior is to look for <see cref="T:Northwoods.Go.Node"/>s whose <see cref="P:Northwoods.Go.Part.Category"/>
+             is "Comment" and that refer to the <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/>.
+             By default this method will not be called unless you set <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.Comments"/> to true.
+            
+             You may want to override this method in order to customize how any
+             associated objects are found and how a new <see cref="T:Northwoods.Go.Layouts.ForceDirectedVertex"/>
+             and <see cref="T:Northwoods.Go.Layouts.ForceDirectedEdge"/>
+             may be added to the network to represent the (balloon?) comment.
+             This method sets the new vertex's <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.Charge"/>
+             to the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultCommentElectricalCharge"/>,
+             and sets the new edge's <see cref="P:Northwoods.Go.Layouts.ForceDirectedEdge.Length"/>
+             to the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultCommentSpringLength"/>.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.GetNodeDistance(Northwoods.Go.Layouts.ForceDirectedVertex,Northwoods.Go.Layouts.ForceDirectedVertex)">
+            @hidden @internal
+            <summary>
+            Returns the distance between two vertexes.
+            </summary>
+            <remarks>
+            The default implementation considers the shortest distance between the two nodes.
+            If the vertexes correspond to top-level parts, the width and height of the
+            part is factored into the distance between the vertexes.
+            If the vertexes do not correspond to parts, then the vertexes implicitly
+            have a width and height of zero, and the distance is calculated.
+            </remarks>
+            <returns>the approximate distance between the two vertexes.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.PerformIterations(System.Int32)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.UpdatePositions">
+            @hidden @internal
+            <summary>
+            Performs one iteration of the ForceDirected algorithm and updates the positions
+            of the vertexes, but not the diagram's nodes.
+            </summary>
+            <returns>returns true if additional iterations are needed to find a solution.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.MoveVertex(Northwoods.Go.Layouts.ForceDirectedVertex)">
+            <summary>
+            (undocumented)
+            Move the vertex by its <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.ForceX"/> and <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.ForceY"/>.
+            </summary>
+            <remarks>
+            This can be overridden in order to constrain the vertex's actual movement.
+            </remarks>
+            <param name="v"></param>
+            <returns>the square of the distance moved.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.MoveFixedVertex(Northwoods.Go.Layouts.ForceDirectedVertex)">
+            <summary>
+            Maybe move a vertex that <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.IsFixed(Northwoods.Go.Layouts.ForceDirectedVertex)"/>.
+            </summary>
+            <remarks>
+            This is called each iteration on each such vertex.
+            By default this does nothing.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLayout">
+            <summary>
+            Set the FromSpot and ToSpot on each Link, position each Node according
+            to the vertex position, and then position/route the Links.
+            </summary>
+            <remarks>
+            This calls the <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitNodes"/> and <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLinks"/> methods, the latter only if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            You should not call this method -- it is a "protected virtual" method.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.SetPortSpotsAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitNodes">
+            <summary>
+            Commit the position of all nodes.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLayout"/>.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLinks"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLinks">
+            <summary>
+            Routes the links.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitLayout"/>.
+            This is only called if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitNodes"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringStiffness(Northwoods.Go.Layouts.ForceDirectedEdge)">
+             <summary>
+             Returns the stiffness of the spring representing an edge.
+             </summary>
+             <remarks>
+             The spring force between two vertexes connected by an edge is linearly proportional by distance
+             to the difference between the <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)"/> and the distance.
+             When the distance is greater than the length, the force pulls the vertexes closer to each other.
+             When the distance is less than the length, the force pushes them apart.
+            
+             The two vertexes connected by the edge E are acted upon by a force of proportional to
+             `SpringStiffness(E) * (GetNodeDistance(E.FromVertex, E.ToVertex) - SpringLength(E))` divided by the distance between the vertexes.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+             <returns>
+             Returns the stiffness of the edge representing a link,
+             the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedEdge.Stiffness"/> if it's a number,
+             or else the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringStiffness"/>.
+             </returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)">
+            <summary>
+            Returns the length of the spring representing an edge.
+            </summary>
+            <remarks>
+            The two vertexes connected by the edge E are acted upon by a force of proportional to
+            `SpringStiffness(E) * (GetNodeDistance(E.FromVertex, E.ToVertex) - SpringLength(E))` divided by the distance between the vertexes.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <returns>
+            Returns the length of the edge representing a link,
+            the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedEdge.Length"/> if it's a number,
+            or else the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringLength"/>.
+            </returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalCharge(Northwoods.Go.Layouts.ForceDirectedVertex)">
+             <summary>
+             Returns the charge of the vertex,
+             the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.Charge"/> if it's a number,
+             or else the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultElectricalCharge"/>.
+             </summary>
+             <remarks>
+             The electrical forces between two vertexes decrease by the square of the distance between them.
+             Vertexes that are more than <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.InfinityDistance"/> apart are assumed to have no electrical charge effect on each other.
+            
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalFieldX(System.Double,System.Double)">
+             <summary>
+             Returns the electrical field in the X direction acting on a vertex at the given point.
+             </summary>
+             <remarks>
+             By default there is no electrical field at any location.
+            
+             Used to define an external electrical field at a point independent of the vertex charges.
+             A vertex L is acted upon by a force in the X direction of proportional to
+             `ElectricalFieldX(L.Center.X, L.Center.Y) * ElectricalCharge(L)`.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+             <returns>the default implementation returns zero.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalFieldY(System.Double,System.Double)">
+             <summary>
+             Returns the electrical field in the Y direction acting on a vertex at the given point.
+             </summary>
+             <remarks>
+             By default there is no electrical field at any location.
+            
+             Used to define an external electrical field at a point independent of the vertex charges.
+             A vertex L is acted upon by a force in the Y direction of proportional to
+             `ElectricalFieldY(L.Center.X, L.Center.Y) * ElectricalCharge(L)`.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+             <returns>the default implementation returns zero.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalMass(Northwoods.Go.Layouts.ForceDirectedVertex)">
+            <summary>
+            Returns the mass of the vertex,
+            the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.Mass"/> if it's a number,
+            or else the value of <see cref="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultGravitationalMass"/>.
+            </summary>
+            <remarks>
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalFieldX(System.Double,System.Double)">
+             <summary>
+             This returns the gravitational field in the X direction acting on a vertex at the given point.
+             </summary>
+             <remarks>
+             By default there is no gravitational field at any location.
+            
+             Used to define an external gravitational field at a point independent of the vertex masses.
+             A vertex L is acted upon by a force in the X direction of proportional to
+             `GravitationalFieldX(L.Center.X, L.Center.Y) * GravitationalMass(L)`.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+             <returns>the default implementation returns zero.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalFieldY(System.Double,System.Double)">
+             <summary>
+             This returns the gravitational field in the Y direction acting on a vertex at the given point.
+             </summary>
+             <remarks>
+             By default there is no gravitational field at any location.
+            
+             Used to define an external gravitational field at a point independent of the vertex masses.
+             A vertex L is acted upon by a force in the Y direction of proportional to
+             `GravitationalFieldY(L.Center.X, L.Center.Y) * GravitationalMass(L)`.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             </remarks>
+             <returns>the default implementation returns zero.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedLayout.IsFixed(Northwoods.Go.Layouts.ForceDirectedVertex)">
+            <summary>
+            This predicate returns true if the vertex should not be moved
+            by the layout algorithm but still have an effect on nearby and connected vertexes.
+            </summary>
+            <remarks>
+            The default implementation returns <see cref="P:Northwoods.Go.Layouts.ForceDirectedVertex.IsFixed"/>.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <returns>returns true if the node should not be moved by the layout algorithm.</returns>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.CurrentIteration">
+            <summary>
+            This read-only property returns the current iteration count, valid during a call to <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})"/>.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.ArrangementSpacing">
+            <summary>
+            Gets or sets the space between which the layout
+            will position the connected graphs that together compose the network.
+            </summary>
+            <remarks>
+            This defaults to Size(100, 100).
+            These distances are used during a clustered layout;
+            afterwards the normal force-directed layout
+            will likely cause the size of any space between connected graphs to change,
+            perhaps considerably.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.ArrangesToOrigin">
+            <summary>
+            Gets or sets whether <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.CommitNodes"/> should move all of the
+            nodes so that the nodes all fit with the top-left corner at the
+            <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>.
+            </summary>
+            <remarks>
+            By default this is false -- the <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/> is ignored.
+            When this is true, nodes are moved even though <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.IsFixed(Northwoods.Go.Layouts.ForceDirectedVertex)"/> was true.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.SetsPortSpots">
+            <summary>
+            Gets or sets whether the fromSpot and the toSpot of every <see cref="T:Northwoods.Go.Link"/>
+            should be set to <see cref="F:Northwoods.Go.Spot.Default"/>.
+            </summary>
+            <remarks>
+            The default value is true.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.Comments">
+            <summary>
+            Gets or sets whether this layout should find all <see cref="T:Northwoods.Go.Node"/>s
+            whose category is "Comment" and
+            whose anchors are nodes represented in the network,
+            and add <see cref="T:Northwoods.Go.Layouts.ForceDirectedVertex"/>es representing those balloon comments
+            as nodes in the network.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.MaxIterations">
+            <summary>
+            Gets or sets the maximum number of iterations to perform when doing the
+            force-directed auto layout.
+            </summary>
+            <remarks>
+            The default value is 100.
+            The value must be non-negative.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.EpsilonDistance">
+            <summary>
+            Gets or sets approximately how far a node must move in order for the iterations to continue.
+            </summary>
+            <remarks>
+            The default value is 1.
+            The value must be larger than zero.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.InfinityDistance">
+            <summary>
+            Gets or sets a threshold for the distance beyond which the electrical charge forces may be ignored.
+            </summary>
+            <remarks>
+            The default value is 1000.
+            The value must be larger than 1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.MoveLimit">
+            <summary>
+            Gets or sets how far a vertex may be moved in an iteration.
+            </summary>
+            <remarks>
+            The default value is 10.
+            The value must be larger than 1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.RandomNumberGenerator">
+             <summary>
+             Gets or sets a random number generator.
+             </summary>
+             <remarks>
+             The default value is a Random.
+             Change this to null in order to use an instance of an internal repeatable pseudo-random number generator,
+             which will become the new value of this property.
+            
+             The new value must be either null or a Random object.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringStiffness">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringStiffness(Northwoods.Go.Layouts.ForceDirectedEdge)"/>.
+            </summary>
+            <remarks>
+            The initial value is 0.05.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultSpringLength">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)"/>.
+            </summary>
+            <remarks>
+            The initial value is 50.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultElectricalCharge">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalCharge(Northwoods.Go.Layouts.ForceDirectedVertex)"/>.
+            </summary>
+            <remarks>
+            The initial value is 150.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultGravitationalMass">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.GravitationalMass(Northwoods.Go.Layouts.ForceDirectedVertex)"/>.
+            </summary>
+            <remarks>
+            The initial value is zero.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultCommentSpringLength">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.SpringLength(Northwoods.Go.Layouts.ForceDirectedEdge)"/>.
+            </summary>
+            <remarks>
+            The initial value is 10.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedLayout.DefaultCommentElectricalCharge">
+            <summary>
+            Gets or sets the default value computed by <see cref="M:Northwoods.Go.Layouts.ForceDirectedLayout.ElectricalCharge(Northwoods.Go.Layouts.ForceDirectedVertex)"/>.
+            </summary>
+            <remarks>
+            The initial value is 5.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.ForceDirectedNetwork">
+            <summary>
+            This class represents an abstract graph of <see cref="T:Northwoods.Go.Layouts.ForceDirectedVertex"/>es and <see cref="T:Northwoods.Go.Layouts.ForceDirectedEdge"/>s
+            that can be constructed based on the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of a <see cref="T:Northwoods.Go.Diagram"/>
+            so that the <see cref="T:Northwoods.Go.Layouts.ForceDirectedLayout"/> can operate independently of the diagram until it
+            is time to commit any node positioning or link routing.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedNetwork.#ctor(Northwoods.Go.Layouts.ForceDirectedLayout)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.#ctor(`2)"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedNetwork.CreateVertex">
+            <inheritdoc/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedNetwork.CreateEdge">
+            <inheritdoc/>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.ForceDirectedVertex">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.ForceDirectedLayout"/>-specific information about <see cref="T:Northwoods.Go.Node"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Vertex"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedVertex.#ctor(Northwoods.Go.Layouts.ForceDirectedNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Vertex.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedVertex.IsFixed">
+            <summary>
+            Gets or sets whether the vertex may be moved by any forces.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedVertex.Charge">
+            <summary>
+            Gets or sets the electrical charge for this vertex.
+            </summary>
+            <remarks>
+            The default value is NaN.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedVertex.Mass">
+            <summary>
+            Gets or sets the gravitational mass for this vertex.
+            </summary>
+            <remarks>
+            The default value is NaN.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedVertex.ForceX">
+            <summary>
+            Gets or sets the cumulative force on the vertex in the X direction.
+            </summary>
+            <remarks>
+            The default value is zero.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedVertex.ForceY">
+            <summary>
+            Gets or sets the cumulative force on the vertex in the Y direction.
+            </summary>
+            <remarks>
+            The default value is zero.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.ForceDirectedEdge">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.ForceDirectedLayout"/>-specific information about <see cref="T:Northwoods.Go.Link"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Edge"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.ForceDirectedEdge.#ctor(Northwoods.Go.Layouts.ForceDirectedNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Edge.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedEdge.Stiffness">
+            <summary>
+            Gets or sets this edge's stiffness or resistance to compression or stretching.
+            </summary>
+            <remarks>
+            The default value is NaN.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.ForceDirectedEdge.Length">
+            <summary>
+            Gets or sets the length of this edge.
+            </summary>
+            <remarks>
+            The default value is NaN.
+            </remarks>
+        </member>
+    </members>
+</doc>

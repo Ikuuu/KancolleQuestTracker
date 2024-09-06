@@ -1,0 +1,528 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Northwoods.GoDiagram.WinForms.CircularLayout</name>
+    </assembly>
+    <members>
+        <member name="T:Northwoods.Go.Layouts.CircularLayout">
+             <summary>
+             This layout positions nodes in a circular arrangement.
+             </summary>
+             <remarks>
+             There are several samples that use CircularLayout.
+             The layout cannot guarantee that it provides optimal positioning of nodes when trying to minimize link crossings.
+            
+             <p class="boxrun">
+             If you want to experiment interactively with most of the properties, try the Circular Layout sample.
+             See samples that make use of CircularLayout in the <a href="../../samples/index.Html#circularlayout">samples index</a>.
+             </p>
+            
+             This layout makes use of a <see cref="T:Northwoods.Go.Layouts.Network`3"/> of
+             <see cref="T:Northwoods.Go.Layouts.CircularVertex"/>es and <see cref="T:Northwoods.Go.Layouts.CircularEdge"/>s that normally
+             correspond to the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of the <see cref="T:Northwoods.Go.Diagram"/>.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.#ctor">
+            <summary>
+            Constructs a <see cref="T:Northwoods.Go.Layouts.CircularLayout"/> with no <see cref="P:Northwoods.Go.Layouts.NetworkLayout`4.Network"/>
+            and with no owning <see cref="P:Northwoods.Go.Layouts.Layout.Diagram"/>.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.CloneProtected(Northwoods.Go.Layouts.Layout)">
+            <summary>
+            Copies properties to a cloned Layout.
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.SetEffectiveValues(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex}@,System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex}@,System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex}@)">
+            @hidden @internal
+            <returns>modified or new List of vertices</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})">
+            <summary>
+            Assign the positions of the vertexes in the network.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.AngleLayout(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Arranges the items so the angle between any item and
+            an adjacent item is the same.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.SpacingLayout(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Arranges the items so the spacing between any item and
+            an adjacent item is the same.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.DistanceLayout(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Arranges the items so the distance between any item and
+            an adjacent item is the same.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.PackedLayout(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Arranges the items so the spacing between any item and
+            an adjacent item is the same, but takes into account the assumption
+            that the nodes are rectangular.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.PackedLayoutFull(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Assume a 360 degree sweep.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.PackedLayoutSemi(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex},System.Double,System.Double,Northwoods.Go.Layouts.CircularDirection)">
+            @hidden @internal
+            <summary>
+            Assume less than 360 degree sweep.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.Nexth(System.Double,System.Double,Northwoods.Go.Layouts.CircularVertex[],System.Int32,Northwoods.Go.Layouts.CircularDirection,System.Double@,System.Double@)">
+            @hidden @internal
+            <summary>
+            Finds the coords. of the next item in the PackedLayout if it's
+            added horizontally.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.Nextv(System.Double,System.Double,Northwoods.Go.Layouts.CircularVertex[],System.Int32,Northwoods.Go.Layouts.CircularDirection,System.Double@,System.Double@)">
+            @hidden @internal
+            <summary>
+            Finds the coords. of the next item in the PackedLayout if it's
+            added vertically.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.CommitLayout">
+            <summary>
+            Position each <see cref="T:Northwoods.Go.Node"/> according to the Vertex position, and then position the <see cref="T:Northwoods.Go.Link"/>s.
+            </summary>
+            <remarks>
+            You should not call this method -- it is a "protected virtual" method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.CommitNodes">
+            <summary>
+            Commit the position of all vertex nodes.
+            </summary>
+            <remarks>
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.CommitLinks">
+            <summary>
+            Commit the position and routing of all edge links.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.CircularLayout.CommitLayout"/>.
+            This is only called if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.EllipsePerim(System.Double,System.Double)">
+            <summary>
+            Finds the perimeter of an ellipse with radii a and b.
+            </summary>
+            <param name="a">One radius</param>
+            <param name="b">The other radius</param>
+            <returns>The circumference</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.EllipsePerim(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Finds the perimeter of an ellipse with radii a and b.
+            </summary>
+            <param name="a">One radius</param>
+            <param name="b">The other radius</param>
+            <param name="theta0">The angle at which the arc begins</param>
+            <param name="sweep">The sweep angle of the  arc.</param>
+            <returns>The circumference</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.InverseEllipsePerim(System.Double,System.Double)">
+            <summary>
+            Returns X radius of ellipse with specified circumference and Aspect ratio.
+            </summary>
+            <param name="circ">The perimeter of ellipse</param>
+            <param name="asprat">The ellipse's aspect ratio</param>
+            <returns>The X radius</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.InverseEllipsePerim(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Returns X radius of ellipse with specified circumference and Aspect ratio.
+            </summary>
+            <param name="circ">The perimeter of ellipse</param>
+            <param name="asprat">The ellipse's aspect ratio</param>
+            <param name="theta0">The angle at which the arc begins</param>
+            <param name="sweep">The sweep angle of the  arc.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.EllipseAngle(System.Double,System.Double,System.Double,System.Double)">
+            @hidden @internal
+            <summary>
+            Returns the angle of an elliptical arc of specified length.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.Sort(Northwoods.Go.Layouts.CircularVertex[])">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.ConnectivityArrange(Northwoods.Go.Layouts.CircularVertex[])">
+            @hidden @internal
+            <summary>
+            Sort the nodes based on connectivity. The first node is the one with the highest connectivity, and
+            each subsequent node is the one with the greatest number of links to nodes already in the list.
+            </summary>
+            <remarks>
+            This is used for cross reduction before optimize is called to make cross reduction more effective.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.Optimize(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex})">
+            @hidden @internal
+            <summary>
+            Sorts the nodes to avoid crossing links.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularLayout.Crossings(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Int32[],System.Int32,System.Collections.Generic.List{System.Int32})">
+            @hidden @internal
+            <summary>
+            Finds the number of link crossings added when a node is inserted at a specified index.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Radius">
+             <summary>
+             Gets or sets the horizontal radius of the elliptical arrangement.
+             </summary>
+             <remarks>
+             The default value is NaN.
+             NaN indicates that the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> will determine the size of the ring.
+            
+             If <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is also NaN, the effective spacing will be 6.
+             If <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is a number, the effective radius will be > radius if and only if
+             the spacing between elements would otherwise be less than spacing.
+            
+             The specified value for <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> will be ignored if <see cref="P:Northwoods.Go.Layouts.CircularLayout.Arrangement"/> == <see cref="F:Northwoods.Go.Layouts.CircularArrangement.Packed"/>.
+            
+             This property must always be positive or NaN.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.AspectRatio">
+             <summary>
+             Gets or sets the ratio of the arrangement's height to its width
+             (1 for a circle, >1 for a vertically elongated ellipse).
+             </summary>
+             <remarks>
+             This is 1 by default.
+             The value must be a positive number.
+            
+             Modifying this value changes the height, but keeps the width and the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> constant.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.StartAngle">
+            <summary>
+            Gets or sets the angle (in degrees, clockwise from the positive side of the X axis) of the first element.
+            </summary>
+            <remarks>
+            The default value is 0.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.SweepAngle">
+             <summary>
+             Gets or sets the absolute angle (in degrees) between the first and last node.
+             </summary>
+             <remarks>
+             The default value is 360.
+             The value must be greater than zero and less than or equal to 360.
+             If it is not in this range, it will be automatically set to 360.
+            
+             Whether the arrangement is clockwise or counterclockwise does not depend on the sign of this value.
+             The direction can be controlled by setting <see cref="P:Northwoods.Go.Layouts.CircularLayout.Direction"/>.
+             If 360 is the specified value, the actual value will be less to keep the first and last
+             elements from overlapping, and the spacing between the first and last nodes will be determined
+             the same way as for all other adjacent nodes.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Arrangement">
+             <summary>
+             Gets or sets how the nodes are spaced.
+             </summary>
+             <remarks>
+             If <see cref="P:Northwoods.Go.Layouts.CircularLayout.Arrangement"/> == <see cref="F:Northwoods.Go.Layouts.CircularArrangement.Packed"/>,
+             the specified <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> will be ignored.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.CircularArrangement.ConstantSpacing"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Direction">
+            <summary>
+            Gets or sets whether the nodes are arranged clockwise or counterclockwise.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.CircularDirection.Clockwise"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Sorting">
+             <summary>
+             Gets or sets if and how the nodes are sorted.
+             </summary>
+             <remarks>
+             <see cref="F:Northwoods.Go.Layouts.CircularSorting.Forwards"/> indicates that the nodes are arranged in the order the layout gets them.
+             <see cref="F:Northwoods.Go.Layouts.CircularSorting.Reverse"/> indicates that the nodes are arranged in the reverse order that the layout gets them.
+             <see cref="F:Northwoods.Go.Layouts.CircularSorting.Ascending"/> and <see cref="F:Northwoods.Go.Layouts.CircularSorting.Descending"/> indicate that the nodes
+             will be sorted using the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Comparer"/>.
+             <see cref="F:Northwoods.Go.Layouts.CircularSorting.Optimized"/> indicates that the nodes will be arranged to minimize link crossings.
+            
+             The default value is <see cref="F:Northwoods.Go.Layouts.CircularSorting.Optimized"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Comparer">
+            <summary>
+            Gets or sets the comparer which sorts the data when <see cref="P:Northwoods.Go.Layouts.CircularLayout.Sorting"/> is
+            set to <see cref="F:Northwoods.Go.Layouts.CircularSorting.Ascending"/> or <see cref="F:Northwoods.Go.Layouts.CircularSorting.Descending"/>.
+            </summary>
+            <remarks>
+            The default function compares the <see cref="P:Northwoods.Go.Part.Text"/> values of the vertexes' <see cref="P:Northwoods.Go.Layouts.Network`3.Vertex.Node"/>s.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.Spacing">
+             <summary>
+             Gets or sets the distance between nodes (if <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> is NaN)
+             or the minimum distance between nodes (if <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> is a number).
+             </summary>
+             <remarks>
+             The default value is 6.
+             The value may be NaN.
+            
+             If <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is NaN, there is no minimum spacing, allowing nodes to overlap,
+             unless <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> is NaN,
+             in which case the effective spacing will be 6 to determine an effective radius.
+             If <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is a number but <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> isn't,
+             the effective spacing will be spacing, and this will determine the effective radius.
+             If both <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> and <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/> are numbers,
+             the effective radius will be at least <see cref="P:Northwoods.Go.Layouts.CircularLayout.Radius"/>,
+             but may be larger so that the minimum spacing between nodes is <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.NodeDiameterFormula">
+             <summary>
+             Specifies how the diameter of nodes will be calculated.
+             </summary>
+             <remarks>
+             When a node is not circular, it is not clear what its diameter is.
+            
+             The default is <see cref="F:Northwoods.Go.Layouts.CircularNodeDiameterFormula.Pythagorean"/>.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.ActualXRadius">
+            <summary>
+            This read-only property is the effective X radius that may have been calculated by the layout.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.ActualYRadius">
+            <summary>
+            This read-only property is the effective Y radius that may have been calculated by the layout.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.ActualSpacing">
+            <summary>
+            This read-only property is the effective spacing that may have been calculated by the layout.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularLayout.ActualCenter">
+            <summary>
+            This read-only property is the coordinates of the center of the laid-out ellipse immediately after the layout.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularArrangement">
+            <summary>
+            This enumeration specifies how nodes should be spaced in the ring.
+            Used for <see cref="P:Northwoods.Go.Layouts.CircularLayout.Arrangement"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularArrangement.ConstantSpacing">
+            <summary>
+            The spacing between the idealized boundaries of the nodes is constant.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularArrangement.ConstantDistance">
+            <summary>
+            The distance between the centers of the nodes is constant.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularArrangement.ConstantAngle">
+            <summary>
+            The angular distance between the nodes is constant.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularArrangement.Packed">
+            <summary>
+            The vertices are arranged as close together as possible considering the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/>,
+            assuming the nodes are rectangular.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularDirection">
+            <summary>
+            This enumeration specifies the direction in which the nodes fill the ring.
+            Used for <see cref="P:Northwoods.Go.Layouts.CircularLayout.Direction"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularDirection.Clockwise">
+            <summary>
+            Rings are filled clockwise.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularDirection.Counterclockwise">
+            <summary>
+            Rings are filled counterclockwise.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularDirection.BidirectionalLeft">
+            <summary>
+            The ring is filled by alternating sides; the second node is counterclockwise from first node.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularDirection.BidirectionalRight">
+            <summary>
+            The ring is filled by alternating sides; the second node is clockwise from first node.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularSorting">
+            <summary>
+            This enumeration specifies how to sort the nodes.
+            Used for <see cref="P:Northwoods.Go.Layouts.CircularLayout.Sorting"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularSorting.Forwards">
+            <summary>
+            Nodes are arranged in the order given.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularSorting.Reverse">
+            <summary>
+            Nodes are arranged in the reverse of the order given.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularSorting.Ascending">
+            <summary>
+            Nodes are sorted using the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Comparer" />, in ascending order.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularSorting.Descending">
+            <summary>
+            Nodes are sorted using the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Comparer" />, in reverse ascending order.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularSorting.Optimized">
+            <summary>
+            Nodes are ordered to reduce link crossings.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularNodeDiameterFormula">
+            <summary>
+            This enumeration specifies a method for finding the size of a node.
+            Used for <see cref="P:Northwoods.Go.Layouts.CircularLayout.NodeDiameterFormula"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularNodeDiameterFormula.Pythagorean">
+            <summary>
+            The effective diameter is sqrt(width^2+height^2).
+            The corners of square nodes will touch at 45 degrees when <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is 0.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.CircularNodeDiameterFormula.Circular">
+            <summary>
+            The effective diameter is either the width or height of the node, whichever is larger.
+            This will cause circular nodes to touch when <see cref="P:Northwoods.Go.Layouts.CircularLayout.Spacing"/> is 0.
+            This is ideal when the nodes are circular.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.VertexArrangement.Compare(System.Double,Northwoods.Go.Layouts.CircularVertex[])">
+            <summary>
+            Compares a new gap with the current one.  If it's better, it updates gap, xcoords, and ycoords.
+            This is for a full sweep, where overshooting (gap less than 0) is worse than undershooting (gap > 0)
+            because it will cause nodes to overlap.
+            </summary>
+            <param name="gap"></param>
+            <param name="verts"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.VertexArrangement.Compare2(System.Double,Northwoods.Go.Layouts.CircularVertex[])">
+            <summary>
+            Compares a new gap with the current one.  If it's better, it updates gap, xcoords, and ycoords.
+            This is for a partial sweep, where overshooting (gap less than 0) is no worse than undershooting (gap > 0).
+            </summary>
+            <param name="gap"></param>
+            <param name="verts"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.VertexArrangement.Commit(System.Collections.Generic.List{Northwoods.Go.Layouts.CircularVertex})">
+            <summary>
+            Set the vertices in verts to the correct positions.
+            </summary>
+            <param name="verts"></param>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularNetwork">
+            <summary>
+            This class represents an abstract graph of <see cref="T:Northwoods.Go.Layouts.CircularVertex"/>es and <see cref="T:Northwoods.Go.Layouts.CircularEdge"/>s
+            that can be constructed based on the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of a <see cref="T:Northwoods.Go.Diagram"/>
+            so that the <see cref="T:Northwoods.Go.Layouts.CircularLayout"/> can operate independently of the diagram until it
+            is time to commit any node positioning or link routing.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularNetwork.#ctor(Northwoods.Go.Layouts.CircularLayout)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.#ctor(`2)"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularNetwork.CreateVertex">
+            <inheritdoc/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularNetwork.CreateEdge">
+            <inheritdoc/>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularVertex">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.CircularLayout"/>-specific information about <see cref="T:Northwoods.Go.Node"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Vertex"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularVertex.#ctor(Northwoods.Go.Layouts.CircularNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Vertex.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularVertex.ComputeDiameter(System.Double)">
+            @hidden @internal
+            <summary>
+            Finds the effective diameter of this CircularVertex, which may depend on the angle
+            at which the ellipse is being filled.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularVertex.Diameter">
+            <summary>
+            Gets or sets the value used as the vertex's diameter.
+            </summary>
+            <remarks>
+            By default the value depends on the <see cref="P:Northwoods.Go.Layouts.CircularLayout.Arrangement"/> property.
+            Any computed value is cached, to avoid unnecessary expensive computations.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.CircularVertex.ActualAngle">
+            <summary>
+            Gets or sets the value used as the vertex's angle.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.CircularEdge">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.CircularLayout"/>-specific information about <see cref="T:Northwoods.Go.Link"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Edge"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.CircularEdge.#ctor(Northwoods.Go.Layouts.CircularNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Edge.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+    </members>
+</doc>

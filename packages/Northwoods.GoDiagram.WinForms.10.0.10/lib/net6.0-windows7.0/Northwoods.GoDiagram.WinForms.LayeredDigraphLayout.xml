@@ -1,0 +1,1291 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Northwoods.GoDiagram.WinForms.LayeredDigraphLayout</name>
+    </assembly>
+    <members>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphLayout">
+             <summary>
+             This arranges nodes of directed graphs into layers (rows or columns).
+             </summary>
+             <remarks>
+             There are many samples that use LayeredDigraphLayout.
+             <p class="boxrun">
+             If you want to experiment interactively with most of the properties, try the Layered Digraph Layout sample.
+             See samples that make use of LayeredDigraphLayout in the <a href="../../samples/index.html#layereddigraphlayout">samples index</a>.
+             </p>
+            
+             The <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayerSpacing"/> property controls the distance between layers.
+             The <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.ColumnSpacing"/> property controls the breadth of each "column" --
+             this affects the distance between nodes within a layer, although the exact distance also depends on the breadth of each node.
+             The <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayeringOption"/> property determines whether nodes without links coming in or without links going out are
+             lined up at the edge of the graph, or whether they are positioned close to their connected nodes.
+            
+             By default the layout will route the links in a manner that is consistent with the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/>.
+             So, for example, if the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/> is 90 degrees (i.e. downward), the links are expected to go from the top towards the bottom.
+             That means the links should come out from the bottom of the ports and should go into the top of the ports.
+             Basically the layout will set <see cref="P:Northwoods.Go.Link.FromSpot"/> to `Spot.Bottom` and <see cref="P:Northwoods.Go.Link.ToSpot"/> to `Spot.Top`.
+            
+             If you want to the links to use the spots that are given by the ports or by the links themselves, you will need to set
+             <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.SetsPortSpots"/> to false to prevent this layout from setting the spots on the links.
+             For example, if each node only has one port that is the whole node, and if you want the links to be spread out along the sides
+             of the nodes, then you should set <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.SetsPortSpots"/> to false and set the node's <see cref="P:Northwoods.Go.GraphObject.FromSpot"/> to
+             `Spot.BottomSide` and <see cref="P:Northwoods.Go.GraphObject.ToSpot"/> to `Spot.TopSide`.
+            
+             This layout handles links that form cycles better than <see cref="!:TreeLayout"/> does.
+             The normal routing behavior for "backwards" links is to route them "around" the source node and "around" the destination node,
+             so that all links come in one side and go out the other side.
+             However if you want "backwards" links to go more directly between nodes, set <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.SetsPortSpots"/> to false and
+             the node's <see cref="P:Northwoods.Go.GraphObject.FromSpot"/> and <see cref="P:Northwoods.Go.GraphObject.ToSpot"/> both to `Spot.TopBottomSides`.
+             (Of course if the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/> is zero or 180, you'll want to use `Spot.LeftRightSides`.)
+            
+             If the diagram is structured in a tree-like fashion,
+             it may be better to use <see cref="!:TreeLayout"/>,
+             which has more options specific to trees.
+             <see cref="!:TreeLayout"/> is much faster than LayeredDigraphLayout,
+             and can handle a limited number of links that would prevent the
+             graph structure from being a true tree (i.e. some nodes having multiple parents).
+            
+             This layout makes use of a <see cref="T:Northwoods.Go.Layouts.Network`3"/> of
+             <see cref="T:Northwoods.Go.Layouts.LayeredDigraphVertex"/>es and <see cref="T:Northwoods.Go.Layouts.LayeredDigraphEdge"/>s that normally
+             correspond to the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of the <see cref="T:Northwoods.Go.Diagram"/>.
+            
+             The layout algorithm consists of four-major steps: Cycle Removal,
+             Layer Assignment, Crossing Reduction, and Straightening and Packing.
+             The layout cannot guarantee that it provides optimal positioning of nodes or routing of links.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.#ctor">
+            <summary>
+            Constructs a <see cref="T:Northwoods.Go.Layouts.LayeredDigraphLayout"/> with no <see cref="P:Northwoods.Go.Layouts.NetworkLayout`4.Network"/>
+            and with no owning <see cref="P:Northwoods.Go.Layouts.Layout.Diagram"/>.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CloneProtected(Northwoods.Go.Layouts.Layout)">
+            <summary>
+            Copies properties to a cloned Layout.
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DoLayout(System.Collections.Generic.IEnumerable{Northwoods.Go.Part})">
+             <summary>
+             Perform the layered digraph layout.
+             </summary>
+             <remarks>
+             This removes any reflexive edges in the network, since they should be ignored.
+            
+             In order to influence a vertex's layer, you can override <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers"/>.
+            
+             Finally this calls <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> to commit the Node positions from the vertex positions.
+             <see cref="M:Northwoods.Go.Layouts.NetworkLayout`4.UpdateParts"/> calls <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayout"/> within a transaction.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LinkMinLength(Northwoods.Go.Layouts.LayeredDigraphEdge)">
+            <summary>
+            (undocumented)
+            This method returns the minimum length of the link represented by the LayeredDigraphEdge link.
+            </summary>
+            <remarks>
+            The default implementation gives links a minimum length of 1.
+            This function can be overridden to provide "fine-tuning" of the layout.
+            </remarks>
+            <returns>the minimum length of the link represented by link.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LinkLengthWeight(Northwoods.Go.Layouts.LayeredDigraphEdge)">
+            @hidden @internal
+            <summary>
+            The function LinkLengthWeight returns the weight of the link
+            represented by the LayeredDigraphEdge link.
+            </summary>
+            <remarks>
+            This weight is used by OptimalLinkLengthLayering to minimize weighted link lengths.
+            The default implementation gives all links a length weight of 1.
+            This function can be overridden to provide "fine-tuning" of the layout.
+            </remarks>
+            <returns>the weight of the link represented by link.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LinkStraightenWeight(Northwoods.Go.Layouts.LayeredDigraphEdge)">
+            @hidden @internal
+            <summary>
+            The function LinkStraightenWeight returns the weight of the link
+            represented by the LayeredDigraphEdge link.
+            </summary>
+            <remarks>
+            This weight is used by the straightening methods to give priority
+            straightening to those links with higher weights.
+            The default implementation gives links between two "real" nodes a weight of 1,
+            links between a "real" node and an "artificial" node a weight of 4,
+            and links between two "artificial" nodes a weight of 8.
+            This function can be overridden to provide "fine-tuning" of the layout.
+            </remarks>
+            <returns>the weight of the link represented by link.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.NodeMinLayerSpace(Northwoods.Go.Layouts.LayeredDigraphVertex,System.Boolean)">
+            <summary>
+            (undocumented)
+            This method returns the minimum space reserved for this node from the center point
+            for the "depth" of the layer that it is in.
+            </summary>
+            <remarks>
+            The default implementation returns 0 for nodes that do not
+            correspond to top-level Go objects.  For nodes that do correspond
+            to top-level Go objects, the layer space is determined by the
+            width or height of the object depending on the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/>.
+            By default this adds 10 to the space, to account for port end segment lengths.
+            </remarks>
+            <param name="v"></param>
+            <param name="topleft">whether to return the distance from the vertex's position</param>
+            <returns>the minimum space reserved above and below this node, in document coordinates.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.NodeMinColumnSpace(Northwoods.Go.Layouts.LayeredDigraphVertex,System.Boolean)">
+            <summary>
+            (undocumented)
+            This method returns the minimum space
+            reserved to either side of this node.
+            </summary>
+            <remarks>
+            The default implementation returns 0 for nodes that do not
+            correspond to top-level Go objects.  For nodes that do correspond
+            to top-level Go objects, the column space is determined by the
+            width and height of the object divided by the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.ColumnSpacing"/>.
+            Note: all sub-classes that override this method should ensure that
+            nodes that do not correspond to top-level Go objects have a minimum
+            column space of 0.
+            This function can be overridden to provide "fine-tuning" of the layout.
+            </remarks>
+            <param name="v"></param>
+            <param name="topleft">whether to return the distance from the vertex's position</param>
+            <returns>the minimum space reserved to either side of the center of this node, in units of <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.ColumnSpacing"/>.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.SaveLayout">
+            @hidden @internal
+            <summary>
+            The function SaveLayout stores the layer, column, and index of all
+            nodes in an array of integers.
+            </summary>
+            <returns>an integer array representation of the current layout.</returns>
+            <seealso cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.RestoreLayout(System.Int32[])"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.RestoreLayout(System.Int32[])">
+            @hidden @internal
+            <summary>
+            The function restoreLayout restores the layer, column, and index of all
+            nodes from an array of integers.
+            </summary>
+            <seealso cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.SaveLayout"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CrossingMatrix(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Computes the crossing matrix between the unfixedLayer and its adjacent layers.
+            </summary>
+            <remarks>
+            The direction argument indicates which adjacent layers should be taken into
+            consideration when computing the crossing matrix:
+            direction == 0  --  use unfixedLayer - 1 and unfixedLayer + 1
+            direction &gt; 0  --  use unfixedLayer - 1 (sweeping away from layer 0)
+            direction &lt; 0  --  use unfixedLayer + 1 (sweeping towards layer 0)
+            The resulting integer array can be used as follows:
+            if index1 and index2 are the indices corresponding to two nodes on the
+            unfixedLayer and crossmat is the crossing matrix, then
+            crossmat[index1 * indices[unfixedLayer] + index2]
+            is the number of crossing that occur if the node corresponding to index1 is
+            placed to the left of the node corresponding to index2.  If index1 == index2,
+            then crossmat[index1 * indices[unfixedLayer] + index2] is the number of crossings
+            between links to and from the node corresponding to index1.
+            </remarks>
+            <returns>the total number of crossings in the network.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CountCrossings">
+            <summary>
+            (undocumented)
+            Returns the total number of crossings in the network.
+            Internal method used by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ReduceCrossings"/>.
+            </summary>
+            <returns>the total number of crossings in the network.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.Bends(System.Int32,System.Int32,System.Boolean)">
+            @hidden @internal
+            <summary>
+            Computes the bends between the unfixedLayer and its adjacent layers.
+            </summary>
+            <remarks>
+            The "bend" between a node U and a node V connected by a link L is calcluated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset))
+            The "weighted bend" between a node U and a node V connected by link L is calculated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset)) * linkStraightenWeight(L)
+            The linkStraightenWeight attempts to give higher priority to links between
+            "artificial" nodes; i.e., long links in the final layout will be straighter.
+            The direction argument indicates which adjacent layers should be taken into
+            consideration when computing the crossing matrix:
+            direction == 0  --  use unfixedLayer - 1 and unfixedLayer + 1
+            direction &gt; 0  --  use unfixedLayer - 1 (sweeping away from layer 0)
+            direction &lt; 0  --  use unfixedLayer + 1 (sweeping towards layer 0)
+            </remarks>
+            <returns>the bends between the unfixedLayer and its adjacent layers.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CountBends(System.Boolean)">
+            @hidden @internal
+            <summary>
+            Returns the total number of bends in the network.
+            </summary>
+            <remarks>
+            The "bend" between a node U and a node V connected by a link L is calcluated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset))
+            The "weighted bend" between a node U// and a node V connected by link L is calculated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset)) * linkStraightenWeight(L)
+            The linkStraightenWeight attempts to give higher priority to links between
+            "artificial" nodes; i.e., long links in the final layout will be straighter.
+            </remarks>
+            <returns>the total number of bends in the network.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.Normalize">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of all nodes such that the leftmost column will be
+            column 0 and MaxColumn is updated appropriately.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.Barycenters(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Computes the array of barycenters (average) columns for the nodes in the
+            unfixedLayer based on the columns of predecessors (direction &lt; 0),
+            successors (direction &gt; 0), or both predecessors and successors (direction == 0).
+            </summary>
+            <remarks>
+            Elements without a defined barycenter will have an entry of -1.
+            </remarks>
+            <returns>the array of barycenters (average) columns for the nodes in
+            the unfixedLayer.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.Medians(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Computes the array of median columns for the nodes in the
+            unfixedLayer based on the columns of predecessors (direction &lt; 0),
+            successors (direction &gt; 0), or both predecessors and successors (direction == 0).
+            </summary>
+            <remarks>
+            Elements without a defined median will have an entry of -1.
+            </remarks>
+            <returns>the array of median columns for the nodes in
+            the unfixedLayer.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.TightComponentUnset(Northwoods.Go.Layouts.LayeredDigraphVertex,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            @hidden @internal
+            <summary>
+            Uses a depth first search algorithm to set the component of all nodes in a component.
+            </summary>
+            <remarks>
+            Tight** functions only set the component and recurse on nodes which are "tight",
+            in the sense that the nodes are separated by a link which corresponds to the
+            minimum link length of the link between the two nodes.
+            **Unset functions only set the component and recurse on nodes whose component is currently
+            set to the unset value.
+            The forward and backward bools indicate the direction to use for a
+            directed depth first search from node.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ComponentUnset(Northwoods.Go.Layouts.LayeredDigraphVertex,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            @hidden @internal
+            <summary>
+            Uses a depth first search algorithm to set the component of all nodes in a component.
+            </summary>
+            <remarks>
+            Unset functions only set the component and recurse on nodes whose component is currently
+            set to the unset value.
+            The forward and backward bools indicate the direction to use for a
+            directed depth first search from node.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.RemoveCycles">
+            <summary>
+            (undocumented)
+            Removes cycles from the input network by reversing some number of links.
+            </summary>
+            <remarks>
+            By default, this just calls <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval"/> or <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstSearchCycleRemoval"/>,
+            as appropriate, give the value of <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.CycleRemoveOption"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.FromLayersCycleRemoval">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval">
+            @hidden @internal
+            <summary>
+            Removes cycles from the input network using a Greedy-Cycle-Removal algorithm.
+            </summary>
+            <remarks>
+            The idea is to induce an order on all nodes
+            in the network (U1, U2, U3, ..., Uk) such that for the majority of links L = (Ui, Uj)
+            it is true that i &lt; j. All links L = (Ui, Uj) such that i &gt; j are reversed.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemovalFindNode(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            @hidden @internal
+            <summary>
+            Finds a valid node in the network.
+            </summary>
+            <remarks>
+            Returns null if no valid node exists.
+            Used by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval"/>.
+            </remarks>
+            <returns>a valid node in the network or null if no valid nodes exist.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemovalFindSink(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            @hidden @internal
+            <summary>
+            Finds a sink node in the network.
+            </summary>
+            <remarks>
+            A node is considered a sink node if it is
+            valid and all of its successors are invalid.  A valid node with no successors
+            is vacuously a sink.
+            Returns null if no valid sink node exists.
+            Used by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval"/>.
+            </remarks>
+            <returns>a sink node in the network, or null if no valid sink node exists.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemovalFindSource(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            @hidden @internal
+            <summary>
+            Finds a source node in the network.
+            </summary>
+            <remarks>
+            A node is considered a source node if it is
+            valid and all of its predecessors are invalid.  A valid node with no predecessors
+            is vacuously a source.
+            Returns null if no valid source node exists.
+            Used by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval"/>.
+            </remarks>
+            <returns>a source node in the network, or null if no valid source node exists.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemovalFindNodeMaxDegDiff(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            @hidden @internal
+            <summary>
+            Finds a valid node in the network that maximizes outdeg - indeg.
+            </summary>
+            <remarks>
+            The degree difference is computed using valid successors and predecessors.
+            Returns null if no valid node exists.
+            Used by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GreedyCycleRemoval"/>.
+            </remarks>
+            <returns>a valid node in the network that maximized outdeg-indeg or null
+            if no valid node exists.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstSearchCycleRemoval">
+            @hidden @internal
+            <summary>
+            Removes cycles from the input network using a depth first search.
+            </summary>
+            <remarks>
+            A link not in the depth first forest is reversed if the from-node was discovered
+            and finished by the depth first search after the to-node was discovered but before
+            the to-node was finished.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstSearchCycleRemovalVisit(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Performs the recursive step of the depth first search on node.
+            </summary>
+            <remarks>
+            Updates the discover and finish time of node.
+            Updates the forest flag of followed links.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._AssignLayersInternal">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers">
+             <summary>
+             Assigns every vertex in the input network to a layer.
+             </summary>
+             <remarks>
+             The layer is a non-negative integer describing which row of vertexes each vertex belongs in.
+             (Do not confuse this concept of "layer" with <see cref="T:Northwoods.Go.Layer"/>s that control the Z-ordering of Parts.)
+            
+             The layering satisfies the following relationship:
+             if L is a link from node U to node V, then U.Layer > V.Layer.
+            
+             This method can be overridden to customize how nodes are assigned layers.
+             Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+             By default, this does the appropriate assignments given the value of <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayeringOption"/>.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LongestPathSinkLayering">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network to a layer.
+            </summary>
+            <remarks>
+            In addition to the requirements described in <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers"/>,
+            LongestPathSinkLayering ensures that every sink appears in layer 0
+            and every node is as close to a sink as possible.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LongestPathSinkLayeringLength(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Computes the length of the longest path from node to a sink node and sets the
+            layer of node to that length.
+            </summary>
+            <returns>the length of the longest path from node to a sink node.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LongestPathSourceLayering">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network to a layer.
+            </summary>
+            <remarks>
+            In addition to the requirements described in <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers"/>,
+            LongestPathSourceLayering ensures that every source appears in layer maxlayer
+            and every node is as close to a source as possible.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.LongestPathSourceLayeringLength(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Computes the length of the longest path from node to a source node and sets the
+            layer of node to that length.
+            </summary>
+            <returns>the length of the longest path from node to a source node.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.OptimalLinkLengthLayering">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network to a layer.
+            </summary>
+            <remarks>
+            In addition to the requirements described in AssignLayers(),
+            OptimalLinkLengthLayering ensures that nodes are set in layers
+            to minimize the total weighted link length.
+            Hence, OptimalLinkLengthLayering minimizes the sum
+            (U.Layer - V.Layer) * LinkLengthWeight(L)
+            over all links L = (U,V).
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.OptimalLinkLengthLayeringDepthFirstSearch(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Performs the depth first search of the network.
+            </summary>
+            <remarks>
+            After traversing all descendents, the node is "pull"-ed into
+            the appropriate layer.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.OptimalLinkLengthLayeringPull(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Attempts to move node and its tight component to a higher layer.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.OptimalLinkLengthLayeringPush(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Attempts to move node and its tight component to a lower layer.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.MakeProper">
+            @hidden @internal
+            <summary>
+            Converts the input network into a proper digraph; i.e., artificial nodes and links
+            are introduced into the network such that every link is between nodes in adjacent
+            layers. This has the effect of breaking up long links into a sequence of artificial
+            nodes.
+            </summary>
+            <remarks>
+            This method must not change the layer of any existing node, nor add or remove any layers.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.GoesAround(Northwoods.Go.Layouts.LayeredDigraphEdge,System.Boolean@,System.Boolean@)">
+            @hidden @internal
+            <summary>
+            aroundfromnode and aroundtonode are outs.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._OppositeSpotDir(Northwoods.Go.Layouts.LayeredDigraphEdge,System.Boolean)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._InitializeIndicesInternal">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeIndices">
+             <summary>
+             (undocumented)
+             Assigns every node in the input network an index number,
+             such that nodes in the same layer will be labeled with
+             consecutive indices in left to right order.
+             </summary>
+             <remarks>
+             All consecutive layout operations will preserve or update
+             the indices.
+            
+             In addition, the indices array is initialized such that
+             indices[layer] indicates the number of nodes in the layer.
+             Finally, the variables MinIndexLayer and MaxIndexLayer record
+             the layers that correspond to the minimum and maximum nodes
+             in a layer.
+             By default this will just call <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.NaiveInitializeIndices"/>,
+             <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstOutInitializeIndices"/>, or
+             <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstInInitializeIndices"/>, as appropriate
+             given the value of <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeOption"/>.
+             This method must not change the layer of any existing node, nor add or remove any layers.
+             </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.NaiveInitializeIndices">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network an index number,
+            such that nodes in the same layer will be labeled with
+            consecutive indices in left to right order.
+            </summary>
+            <remarks>
+            Uses a naive implementation that assigns indices to nodes as they
+            are encountered in a sweep of the network.  Because of the way
+            networks are stored, this has the effect of initially placing all
+            "artificial" nodes to the right of all "real" nodes.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstOutInitializeIndices">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network an index number,
+            such that nodes in the same layer will be labeled with
+            consecutive indices in left to right order.
+            </summary>
+            <remarks>
+            Uses a depth first "outward" (i.e., following links from "from-node" to "to-node")
+            traversal of the network, assigning indices to nodes as they are discovered.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstOutInitializeIndicesVisit(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Assigns node the appropriate index and updates the indices array.
+            </summary>
+            <remarks>
+            Implements the recursive portion of a depth first search.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstInInitializeIndices">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network an index number,
+            such that nodes in the same layer will be labeled with
+            consecutive indices in left to right order.
+            </summary>
+            <remarks>
+            Uses a depth first "inward" (i.e., following links from "to-node" to "from-node")
+            traversal of the network, assigning indices to nodes as they are discovered.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.DepthFirstInInitializeIndicesVisit(Northwoods.Go.Layouts.LayeredDigraphVertex)">
+            @hidden @internal
+            <summary>
+            Assigns node the appropriate index and updates the indices array.
+            </summary>
+            <remarks>
+            Implements the recursive portion of a depth first search.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeColumns">
+            @hidden @internal
+            <summary>
+            Assigns every node in the input network a column number,
+            such that nodes in the same layer will be labeled with
+            increasing indices in left to right order.
+            </summary>
+            <remarks>
+            In addition, a node U is assigned to a column such that
+            2 * MinColumnSpace(U) + 1 columns are "allocated" to node U,
+            and no two nodes have overlapping "allocations" of columns.
+            All consecutive layout operations will preserve or update
+            the columns.
+            This method can be overridden to customize the layout algorithm.
+            This method must not change the layer of any existing node, nor add or remove any layers.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ReduceCrossings">
+            <summary>
+            (undocumented)
+            Reorders nodes within layers to reduce the total number of link
+            crossings in the network.
+            </summary>
+            <remarks>
+            There are many, many possible implementations of this function.
+            Basically, some iteration of MedianBarycenterCrossingReduction
+            and AdjacentExchangeCrossingReductionBendStraighten
+            sweeping back and forth over the layers is needed.
+            The default implementation has performed favorably on a large number
+            of networks, but other options are available.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.MedianBarycenterCrossingReduction(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Reorders nodes within the unfixedLayer to reduce the number of link crossings between
+            the unfixedLayer and its adjacent layers.
+            </summary>
+            <remarks>
+            The direction argument indicates which of the
+            adjacent layers should be taken into consideration when reducing the number of crossings.
+            direction == 0  --  use unfixedLayer - 1 and unfixedLayer + 1
+            direction &gt; 0  --  use unfixedLayer - 1 (sweeping away from layer 0)
+            direction &lt; 0  --  use unfixedLayer + 1 (sweeping towards layer 0)
+            The idea is to calculate the median and barycenter for each node in the unfixedLayer,
+            and to sort the nodes in the unfixedLayer by their median and barycenter values.
+            </remarks>
+            <returns>true if some change was made to the layer and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AdjacentExchangeCrossingReductionBendStraighten(System.Int32,System.Int32,System.Boolean,System.Double)">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes within the unfixedLayer to simultaneously reduce the
+            number of link crossings and the number of "bends" between the unfixedLayer and its
+            adjacent layers.
+            </summary>
+            <remarks>
+            The directionCR argument indicates which of the adjacent layers should be taken
+            into consideration when reducing the number of link crossings.
+            direction == 0  --  use unfixedLayer - 1 and unfixedLayer + 1
+            direction &gt; 0  --  use unfixedLayer - 1 (sweeping away from layer 0)
+            direction &lt; 0  --  use unfixedLayer + 1 (sweeping towards layer 0)
+            The directionBS argument indicates which of the adjacent layers should be taken
+            into consideration when reducing the number of bends.
+            direction == 0  --  use unfixedLayer - 1 and unfixedLayer + 1
+            direction &gt; 0  --  use unfixedLayer - 1 (sweeping away from layer 0)
+            direction &lt; 0  --  use unfixedLayer + 1 (sweeping towards layer 0)
+            The "weighted bend" between a node U and a node V connected by link L is calculated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset)) * LinkStraightenWeight(L)
+            The LinkStraightenWeight attempts to give higher priority to links between
+            "artificial" nodes; i.e., long links in the final layout will be straighter.
+            The idea is to use a bubble-sort technique to exchange adjacent nodes whenever
+            doing so reduces the number of link crossings or the number of bends.
+            This function is used in both crossing reduction and bend straightening.
+            </remarks>
+            <param name="unfixedLayer">The layer to be reordered.</param>
+            <param name="directionCR">Indicates which adjacent layers should be taken into consideration when calculating the crossing matrix.</param>
+            <param name="straighten">Indicates whether or not to reorder to nodes to straighten links.</param>
+            <param name="directionBS">Indicates which adjacent layers should be taken into consideration when calculating the bends of a link.</param>
+            <returns>true if some change was made to the layer and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.StraightenAndPack">
+            <summary>
+            (undocumented)
+            Adjusts the columns of nodes in the network to produce a layout which reduces
+            the number of bends and is tightly packed.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.BendStraighten(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes within the unfixedLayer to reduce the number of "bends"
+            between the unfixedLayer and its adjacent layers.
+            </summary>
+            <remarks>
+            The direction argument indicates
+            which of the adjacent layers should be taken into consideration when reducing the number
+            of bends.
+            The "weighted bend" between a node U and a node V connected by link L is calculated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset)) * LinkStraightenWeight(L)
+            The LinkStraightenWeight attempts to give higher priority to links between
+            "artificial" nodes; i.e., long links in the final layout will be straighter.
+            The idea is to iterate the shiftBendStraighten and adjacentExchangeBendStraighten
+            methods until no improvements are made.
+            </remarks>
+            <returns>true if an improvement was made.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ShiftBendStraighten(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes within the unfixedLayer to reduce the number of "bends"
+            between the unfixedLayer and its adjacent layers.  The direction argument indicates
+            which of the adjacent layers should be taken into consideration when reducing the number
+            of bends.
+            </summary>
+            <remarks>
+            The "weighted bend" between a node U and a node V connected by link L is calculated by
+            abs((U.Column + L.PortFromColOffset) - (V.Column + L.PortToColOffset)) * linkStraightenWeight(L)
+            The linkStraightenWeight attempts to give higher priority to links between
+            "artificial" nodes; i.e., long links in the final layout will be straighter.
+            The idea is shift nodes to the left and to the right to reduce the bends
+            ensuring that no two nodes have overlapping "allocations" of columns.
+            </remarks>
+            <returns>true if some change was made to the layer and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.MedianStraighten(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes within the unfixedLayer in order to move nodes towards
+            their median columns.
+            </summary>
+            <remarks>
+            The direction argument indicates which of the adjacent layers
+            should be taken into consideration when computing the median column.
+            The idea is shift nodes to the left and to the right to move nodes towards their
+            median columns, ensuring that no two nodes have overlapping "allocations" of columns.
+            </remarks>
+            <returns>true if some change was made to the layer and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.Pack">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes in the network to produce a layout which is tightly packed.
+            </summary>
+            <remarks>
+            The idea is that columns which are "un-allocated" through all layers can be eliminated
+            and the nodes can be shifted into that space.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.PackAux(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Attempts to remove the argument column by shifting columns into from the argument direction.
+            </summary>
+            <remarks>
+            direction &gt; 0 -- columns &gt; argument column are shifted
+            direction &lt; 0 -- columns &lt; argument column are shifted
+            </remarks>
+            <returns>true if the argument column was removed and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.TightPack">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes in the network to produce a layout which is tightly packed.
+            </summary>
+            <remarks>
+            The idea is that two adjacent columns can be "merged" if each layer has at most one of
+            the two columns "allocated" to a node.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.TightPackAux(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Attempts to augment the argument column by merging columns into from the argument direction.
+            </summary>
+            <remarks>
+            direction &gt; 0 -- columns &gt; the argument column are shifted
+            direction &lt; 0 -- columns &lt; the argument column are shifted
+            </remarks>
+            <returns>true if the argument column was changed and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ComponentPack(System.Int32)">
+            @hidden @internal
+            <summary>
+            Adjusts the columns of nodes in the network to produce a layout which is tightly packed.
+            </summary>
+            <remarks>
+            The idea is that the network can be fragmented from a given column in the following way:
+            all nodes "behind" the column are placed into a single component, and the remainder of
+            the network is divided into connected components.  Each of these new components can be
+            examined, and those that can be merged with the given column do so.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ComponentPackAux(System.Int32,System.Int32)">
+            @hidden @internal
+            <summary>
+            Attempts to augment the argument column by merging components into from the argument direction.
+            </summary>
+            <remarks>
+            direction &gt; 0 -- columns &gt; the argument column are shifted
+            direction &lt; 0 -- columns &lt; the argument column are shifted
+            </remarks>
+            <returns>true if the argument column was changed and false otherwise.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayout">
+            <summary>
+            Set the FromSpot and ToSpot on each Link, position each Node according
+            to the vertex position, and then position/route the Links.
+            </summary>
+            <remarks>
+            This calls the <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitNodes"/> and <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLinks"/> methods, the latter only if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            You should not call this method -- it is a "protected virtual" method.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._SetPortSpotsAll">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._GetDefaultSpot(System.Boolean)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitNodes">
+            <summary>
+            Commit the position of all nodes.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayout"/>.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLinks"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayersInternal">
+            @hidden @internal
+            <summary>
+            Call <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayers(System.Collections.Generic.List{Northwoods.Go.Rect},Northwoods.Go.Point)"/>, but only if all vertexes will be completely aligned in layers across the whole tree.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayers(System.Collections.Generic.List{Northwoods.Go.Rect},Northwoods.Go.Point)">
+             <summary>
+             This overridable method is called by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayout"/>
+             to support custom arrangement of bands or labels across each layout layer.
+             </summary>
+             <remarks>
+             By default this method does nothing.
+            
+             The coordinates used in the resulting Rects may need to be offset by the <see cref="P:Northwoods.Go.Layouts.Layout.ArrangementOrigin"/>.
+             </remarks>
+             <param name="layerRects">a List of <see cref="T:Northwoods.Go.Rect"/>s with the bounds of each of the "layers"</param>
+             <param name="offset">the position of the top-left corner of the banded area relative to the coordinates given by the layerRects</param>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLinks">
+            <summary>
+            Routes the links.
+            </summary>
+            <remarks>
+            This is called by <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLayout"/>.
+            This is only called if <see cref="P:Northwoods.Go.Layouts.Layout.IsRouting"/> is true.
+            Please read the Introduction page on <a href="../../intro/extensions.Html">Extensions</a> for how to override methods and how to call this base method.
+            </remarks>
+            <seealso cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitNodes"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AvoidOrthogonalOverlaps">
+            @hidden @internal
+            <summary>
+            Try to avoid overlapping segments of Orthogonal links.
+            </summary>
+            <remarks>
+            This is called as part of <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.CommitLinks"/>.
+            </remarks>
+            @expose
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.IsApprox(System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AdjustOverlapsH(System.Collections.Generic.List{Northwoods.Go.Link})">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AdjustOverlapsV(System.Collections.Generic.List{Northwoods.Go.Link})">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout.IsUnoccupied2(System.Double,System.Double,System.Double,System.Double)">
+            @hidden @internal
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._ClearCaches">
+            @hidden @internal
+            <summary>
+            Resets several of the private variables in LayeredDigraphLayout.
+            </summary>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._GetCachedNodeArrayList(System.Int32)">
+            @hidden @internal
+            <summary>
+            Gets the cached node array list.
+            </summary>
+            <remarks>
+            Tries to reuse some of the temporary node arrays.
+            </remarks>
+            <param name="unfixedLayer">the layer from which nodes are drawn to fill unfixedLayerNodes.</param>
+            <returns>the cached node array list.</returns>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphLayout._FreeCachedNodeArrayList(System.Int32,Northwoods.Go.Layouts.LayeredDigraphVertex[])">
+            @hidden @internal
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayerSpacing">
+            <summary>
+            Gets or sets the space between each layer.
+            </summary>
+            <remarks>
+            This value must be positive and it defaults to 25.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.ColumnSpacing">
+            <summary>
+            Gets or sets the size of each column.
+            </summary>
+            <remarks>
+            This value must be positive and it defaults to 25.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction">
+            <summary>
+            Gets or sets the direction the graph grows towards.
+            </summary>
+            <remarks>
+            0 is towards the right, 90 is downwards, 180 is towards the left, and 270 is upwards.
+            The default value is 0.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.CycleRemoveOption">
+            <summary>
+            Gets or set which cycle removal option is used.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.LayeredDigraphCycleRemove.DepthFirst"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayeringOption">
+            <summary>
+            Gets or sets which layering option is being used.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.LayeredDigraphLayering.OptimalLinkLength"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeOption">
+            <summary>
+            Gets or sets which indices initialization option is being used.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.LayeredDigraphInit.DepthFirstOut"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Iterations">
+            <summary>
+            Gets or sets the number of iterations to be done.
+            </summary>
+            <remarks>
+            The value must be non-negative.  The default value is 4.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.AggressiveOption">
+            <summary>
+            Gets or sets which aggressive option is being used to look for link crossings.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.LayeredDigraphAggressive.Less"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.PackOption">
+            <summary>
+            Gets or sets the options used by the straighten and pack function.
+            </summary>
+            <remarks>
+            The default value is <see cref="F:Northwoods.Go.Layouts.LayeredDigraphPack.All"/>.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.SetsPortSpots">
+             <summary>
+             Gets or sets whether the FromSpot and ToSpot of each link should be set
+             to values appropriate for the given value of <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/>.
+             </summary>
+             <remarks>
+             The default value is true.
+            
+             If you set this to false, the spot values of the links and port objects will be used.
+             If you do not set the spot values to sensible values matching the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.Direction"/>,
+             the routing results may be poor and they may cross over nodes.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LinkSpacing">
+             <summary>
+             (undocumented)
+             Gets or sets the distance between link segments for unrelated links that would otherwise be overlapping.
+             </summary>
+             <remarks>
+             The default value is 4. The value must be positive.
+            
+             If there are a lot of possibly overlapping links and the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayerSpacing"/> is not large enough,
+             some links may cross over nodes.
+             You will either need to increase the LayerSpacing or decrease this LinkSpacing property.
+             </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.MaxLayer">
+            <summary>
+            This read-only property returns the largest layer value.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.MaxIndex">
+            <summary>
+            This read-only property returns the largest index value.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.MaxColumn">
+            <summary>
+            This read-only property returns the largest column value.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.MinIndexLayer">
+            <summary>
+            This read-only property returns the smallest index layer.
+            </summary>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphLayout.MaxIndexLayer">
+            <summary>
+            This read-only property returns the larges index layer.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphCycleRemove">
+            <summary>
+            This enumeration specifies how <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.RemoveCycles"/> changes the graph
+            to make sure it contains no cycles or loops.
+            Used for <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.CycleRemoveOption"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphCycleRemove.DepthFirst">
+            <summary>
+            Remove cycles using depth first cycle removal.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphCycleRemove.Greedy">
+            <summary>
+            Remove cycles using greedy cycle removal.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphCycleRemove.FromLayers">
+            <summary>
+            Remove cycles depending on <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers"/> determining entirely which links are backwards links.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphLayering">
+            <summary>
+            This enumeration specifies how <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.AssignLayers"/>
+            assigns each node of the graph to a layer.
+            Used for <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.LayeringOption"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphLayering.OptimalLinkLength">
+            <summary>
+            Assign layers using optimal link length layering.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphLayering.LongestPathSink">
+            <summary>
+            Assign layers using longest path sink layering.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphLayering.LongestPathSource">
+            <summary>
+            Assign layers using longest path source layering.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphInit">
+            <summary>
+            This enumeration specifies how <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeIndices"/>
+            determines the array of indices for each layer.
+            Used for <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.InitializeOption"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphInit.DepthFirstOut">
+            <summary>
+            Initialize using depth first out initialization.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphInit.DepthFirstIn">
+            <summary>
+            Initialize using depth first in initialization.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphInit.Naive">
+            <summary>
+            Initialize using naive initialization.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphAggressive">
+            <summary>
+            This enumeration specifies how much effort <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.ReduceCrossings"/>
+            puts into trying to look for link crossings.
+            Used for <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.AggressiveOption"/>.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphAggressive.None">
+            <summary>
+            The fastest, but poorest, crossing reduction algorithm.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphAggressive.Less">
+            <summary>
+            The faster, less aggressive, crossing reduction algorithm.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphAggressive.More">
+            <summary>
+            The slower, more aggressive, crossing reduction algorithm.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphPack">
+            <summary>
+            These enumerated values can be bitwise combined as values for
+            the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.PackOption"/> property, which
+            controls how much and what kinds of effort <see cref="M:Northwoods.Go.Layouts.LayeredDigraphLayout.StraightenAndPack"/> makes.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.None">
+            <summary>
+            Does minimal work in packing the nodes.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.Expand">
+            <summary>
+            This option gives more chances for the packing algorithm to improve the network,
+            but is very expensive in time for large networks.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.Straighten">
+            <summary>
+            This option tries to have the packing algorithm straighten many of the
+            links that cross layers.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.Median">
+            <summary>
+            This option tries to have the packing algorithm center groups of nodes
+            based on their relationships with nodes in other layers.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.MaybeExpand">
+            <summary>
+            Undocumented.
+            </summary>
+        </member>
+        <member name="F:Northwoods.Go.Layouts.LayeredDigraphPack.All">
+            <summary>
+            Enable all options for the <see cref="P:Northwoods.Go.Layouts.LayeredDigraphLayout.PackOption"/> property.
+            </summary>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphNetwork">
+            <summary>
+            This class represents an abstract graph of <see cref="T:Northwoods.Go.Layouts.LayeredDigraphVertex"/>es and <see cref="T:Northwoods.Go.Layouts.LayeredDigraphEdge"/>s
+            that can be constructed based on the <see cref="T:Northwoods.Go.Node"/>s and <see cref="T:Northwoods.Go.Link"/>s of a <see cref="T:Northwoods.Go.Diagram"/>
+            so that the <see cref="T:Northwoods.Go.Layouts.LayeredDigraphLayout"/> can operate independently of the diagram until it
+            is time to commit any node positioning or link routing.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphNetwork.#ctor(Northwoods.Go.Layouts.LayeredDigraphLayout)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.#ctor(`2)"/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphNetwork.CreateVertex">
+            <inheritdoc/>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphNetwork.CreateEdge">
+            <inheritdoc/>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphVertex">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.LayeredDigraphLayout"/>-specific information about <see cref="T:Northwoods.Go.Node"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Vertex"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphVertex.#ctor(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Vertex.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphVertex.Layer">
+            <summary>
+            Gets or sets the layer to which the node is assigned.
+            </summary>
+            <remarks>
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphVertex.Column">
+            <summary>
+            Gets or sets the column to which the node is assigned.
+            </summary>
+            <remarks>
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphVertex.Index">
+            <summary>
+            Gets or sets the index to which the node is assigned.
+            </summary>
+            <remarks>
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphVertex.Component">
+            <summary>
+            Gets or sets the connected component to which the node is assigned.
+            </summary>
+            <remarks>
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphVertex.Near">
+            <summary>
+            Gets or sets another LayeredDigraphVertex in the same layer that this node should be near.
+            </summary>
+            <remarks>
+            The default value is null.
+            </remarks>
+        </member>
+        <member name="T:Northwoods.Go.Layouts.LayeredDigraphEdge">
+            <summary>
+            This holds <see cref="T:Northwoods.Go.Layouts.LayeredDigraphLayout"/>-specific information about <see cref="T:Northwoods.Go.Link"/>s.
+            </summary>
+            <remarks>
+            This class inherits from <see cref="T:Northwoods.Go.Layouts.Network`3.Edge"/>.
+            </remarks>
+        </member>
+        <member name="M:Northwoods.Go.Layouts.LayeredDigraphEdge.#ctor(Northwoods.Go.Layouts.LayeredDigraphNetwork)">
+            <inheritdoc cref="M:Northwoods.Go.Layouts.Network`3.Edge.#ctor(Northwoods.Go.Layouts.Network{`0,`1,`2})"/>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.Valid">
+            <summary>
+            True if the link is part of the proper digraph.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.Rev">
+            <summary>
+            True if the link was reversed during cycle removal.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.Forest">
+            <summary>
+            True if the link is part of the depth first forest.
+            </summary>
+            <remarks>
+            The default value is false.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.PortFromPos">
+            <summary>
+            Location of the port at the from node of the link.
+            </summary>
+            <remarks>
+            Allows the crossing matrix to correctly calculate the crossings for nodes with multiple ports.
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.PortToPos">
+            <summary>
+            Location of the port at the to node of the link.
+            </summary>
+            <remarks>
+            Allows the crossing matrix to correctly calculate the crossings for nodes with multiple ports.
+            The default value is -1.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.PortFromColOffset">
+            <summary>
+            Approximate column offset of the from port of the link from the from node column used in straightening.
+            </summary>
+            <remarks>
+            The default value is 0.
+            </remarks>
+        </member>
+        <member name="P:Northwoods.Go.Layouts.LayeredDigraphEdge.PortToColOffset">
+            <summary>
+            Approximate column offset of the to port of the link from the to node column used in straightening.
+            </summary>
+            <remarks>
+            The default value is 0.
+            </remarks>
+        </member>
+    </members>
+</doc>
