@@ -7,8 +7,16 @@
       "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\questitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\questitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\htmlquestitems.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\htmlquestitems.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -21,10 +29,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\reward.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\reward.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\kancollequesttracker\\questitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{842CE962-DB06-45DE-9D48-87DB4D3F235F}|KancolleQuestTracker\\KancolleQuestTracker.csproj|solutionrelative:kancollequesttracker\\questitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -44,7 +48,7 @@
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Form1.cs",
               "ToolTip": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Form1.cs",
               "RelativeToolTip": "KancolleQuestTracker\\Form1.cs",
-              "ViewState": "AQIAAKACAAAAAAAAAAAqwL8CAAAAAAAA",
+              "ViewState": "AQIAACwDAAAAAAAAAAAAADoDAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-03T01:01:18.529Z",
               "IsPinned": true,
@@ -52,18 +56,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
+              "Title": "HTMLQuestItems.cs",
+              "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\HTMLQuestItems.cs",
+              "RelativeDocumentMoniker": "KancolleQuestTracker\\HTMLQuestItems.cs",
+              "ToolTip": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\HTMLQuestItems.cs",
+              "RelativeToolTip": "KancolleQuestTracker\\HTMLQuestItems.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-07T23:29:07.742Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Form1.cs [Design]",
               "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Form1.cs",
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Form1.cs",
               "ToolTip": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Form1.cs [Design]",
               "RelativeToolTip": "KancolleQuestTracker\\Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-04T21:56:21.374Z"
+              "WhenOpened": "2024-09-04T21:56:21.374Z",
+              "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "Form1.Designer.cs",
               "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Form1.Designer.cs",
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Form1.Designer.cs",
@@ -71,11 +89,12 @@
               "RelativeToolTip": "KancolleQuestTracker\\Form1.Designer.cs",
               "ViewState": "AQIAABUAAAAAAAAAAAAwwHgCAAAwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-05T02:53:11.32Z"
+              "WhenOpened": "2024-09-05T02:53:11.32Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "Reward.cs",
               "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Reward.cs",
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Reward.cs",
@@ -87,7 +106,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\Program.cs",
               "RelativeDocumentMoniker": "KancolleQuestTracker\\Program.cs",
@@ -99,7 +118,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "QuestItem.cs",
               "DocumentMoniker": "C:\\Users\\Marvin\\source\\repos\\KancolleQuestTracker\\KancolleQuestTracker\\QuestItem.cs",
               "RelativeDocumentMoniker": "KancolleQuestTracker\\QuestItem.cs",
@@ -107,7 +126,8 @@
               "RelativeToolTip": "KancolleQuestTracker\\QuestItem.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAqwAkAAAATAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-05T02:24:38.989Z"
+              "WhenOpened": "2024-09-05T02:24:38.989Z",
+              "EditorCaption": ""
             }
           ]
         }

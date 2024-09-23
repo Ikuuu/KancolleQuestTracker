@@ -429,7 +429,7 @@ namespace KancolleQuestTracker
             }
 
 
-            }
+        }
 
         private void addCompletedRibbon(Node aNode) 
         {
@@ -826,6 +826,10 @@ namespace KancolleQuestTracker
             foreach (QuestItem aQuest in quests)
             {
                 NodeData aNode;
+                if (aQuest.prereqs.Contains("Seasonal Exercises Quests")) 
+                {
+                    aQuest.prereqs = aQuest.prereqs.Replace("Seasonal Exercises Quests", "Cs3, Cs4, Cs5, Cs1, Cs2");
+                }
 
                 switch (aQuest.type)
                 {
