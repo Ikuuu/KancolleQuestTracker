@@ -749,15 +749,42 @@ namespace KancolleQuestTracker
                     String requirementString = questItem.Requirenment.ChildNodes[1].InnerText;
                     String preReqString = questItem.PreReq.ChildNodes[3].InnerText;
                     String notesString = questItem.Notes.ChildNodes[3].InnerText;
+                    if (nameString.IndexOf("<i>") > -1) {
 
-                    int pFrom = nameString.IndexOf("<i>") + "<i>".Length;
-                    int pTo = nameString.LastIndexOf("</i>");
-                    aQuest.name = nameString.Substring(pFrom, pTo - pFrom);
+                        int pFrom = nameString.IndexOf("<i>") + "<i>".Length;
+                        int pTo = nameString.LastIndexOf("</i>");
+                        aQuest.name = nameString.Substring(pFrom, pTo - pFrom);
+                    }
+                    else
+                    {
+                        aQuest.name = "Name Unknown";
+                    }
+                    
 
-                    aQuest.fuel = Int32.Parse(fuelString.Substring(0, fuelString.Length - 1));
-                    aQuest.ammo = Int32.Parse(ammoString.Substring(0, ammoString.Length - 1));
-                    aQuest.steel = Int32.Parse(steelString.Substring(0, steelString.Length - 1));
-                    aQuest.bauxite = Int32.Parse(bauxiteString.Substring(0, bauxiteString.Length - 1));
+                    bool fuelSuccess = Int32.TryParse(fuelString.Substring(0, fuelString.Length - 1), out int fuelReward);
+                    bool ammoSuccess = Int32.TryParse(ammoString.Substring(0, ammoString.Length - 1), out int ammoReward);
+                    bool steelSuccess = Int32.TryParse(steelString.Substring(0, steelString.Length - 1), out int steelReward);
+                    bool bauxiteSuccess = Int32.TryParse(bauxiteString.Substring(0, bauxiteString.Length - 1), out int bauxiteReward);
+
+                    if (fuelSuccess)
+                        aQuest.fuel = fuelReward;
+                    else
+                        aQuest.fuel = 0;
+
+                    if (ammoSuccess)
+                        aQuest.ammo = ammoReward; 
+                    else
+                        aQuest.ammo = 0;
+
+                    if (steelSuccess) 
+                        aQuest.steel = steelReward;
+                    else
+                        aQuest.steel = 0;
+                    if (bauxiteSuccess)
+                        aQuest.bauxite = bauxiteReward; 
+                    else
+                        aQuest.bauxite = 0;
+
                     aQuest.requirement = requirementString;
                     aQuest.description = descriptionString.Substring(0, descriptionString.Length - 1);
                     aQuest.prereqs = preReqString.Substring(0, preReqString.Length - 1);
