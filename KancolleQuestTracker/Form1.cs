@@ -312,6 +312,11 @@ namespace KancolleQuestTracker
                         panel6.BackColor = Color.LightPink;
                         break;
                     default:
+                        panel1.BackColor = Color.Orange;
+                        panel2.BackColor = Color.Orange;
+                        panel3.BackColor = Color.Orange;
+                        panel4.BackColor = Color.Orange;
+                        panel6.BackColor = Color.Orange;
                         break;
                 }
             }
@@ -514,6 +519,8 @@ namespace KancolleQuestTracker
                             throw new Exception($"Quest: {quest} was not found in the nodes");
                     }
                 }
+
+                btnSubmitQuests.Enabled = false;
                 
             }
             catch (Exception ex) 
@@ -738,7 +745,7 @@ namespace KancolleQuestTracker
                 foreach (HTMLQuestItems questItem in htmlQuests)
                 {
                     QuestItem aQuest = new QuestItem();
-                    aQuest.ID = questItem.ID.Id;
+                    aQuest.ID = questItem.ID.ChildNodes[1].ChildNodes[0].ChildNodes[0].InnerText;
                     aQuest.repeat = questItem.ID.ChildNodes[1].InnerText;
                     String nameString = questItem.ID.ChildNodes[3].OuterHtml;
                     String fuelString = questItem.ID.ChildNodes[5].InnerText;
@@ -835,7 +842,7 @@ namespace KancolleQuestTracker
 
                     quests.Add(aQuest);
                 }
-
+                ImportQuests.Enabled = false;
                 btnPopulate.Enabled = true;
 
             }
