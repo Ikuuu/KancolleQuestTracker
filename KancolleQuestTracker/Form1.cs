@@ -363,6 +363,7 @@ namespace KancolleQuestTracker
                 Node searchedNode = myDiagram.FindNodeForKey(key);
                 if (searchedNode != null) 
                 {
+                    currentlyClickedNode = searchedNode;
                     generateQuestInfo(searchedNode);
                     Shape aShape = searchedNode.FindElement("SHAPE") as Shape;
                     aShape.Stroke = "yellow";
