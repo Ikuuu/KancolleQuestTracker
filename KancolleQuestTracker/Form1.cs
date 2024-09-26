@@ -40,6 +40,7 @@ namespace KancolleQuestTracker
         public Form1()
         {
             InitializeComponent();
+            this.AcceptButton = btnSearch;
             
             myDiagram = mainDiagramControl.Diagram;
             myDiagram.InitialAutoScale = Northwoods.Go.AutoScale.UniformToFill;
@@ -402,11 +403,11 @@ namespace KancolleQuestTracker
         private void btnSearch_Click(object sender, EventArgs e)
         {
             String questToSearch = txtSearch.Text;
-            if (!String.IsNullOrEmpty(questToSearch)) 
+            if (!String.IsNullOrEmpty(questToSearch))
             {
                 Object key = questToSearch.ToLower();
                 Node searchedNode = myDiagram.FindNodeForKey(key);
-                if (searchedNode != null) 
+                if (searchedNode != null)
                 {
                     currentlyClickedNode = searchedNode;
                     generateQuestInfo(searchedNode);
@@ -419,12 +420,16 @@ namespace KancolleQuestTracker
                     searchedNodesBack(searchedNode);
                     searchedNodesForward(searchedNode);
                 }
-                else 
+                else
                 {
-                    MessageBox.Show($"Quest: {questToSearch} was not found in the chart","Quest not found",MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Quest: {questToSearch} was not found in the chart", "Quest not found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
 
+            }
+            else 
+            {
+                MessageBox.Show($"Please Type a Quest into the searchbar to search", "No Quest To Search", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
 
