@@ -1,4 +1,6 @@
-﻿namespace KancolleQuestTracker
+﻿using System.Drawing;
+
+namespace KancolleQuestTracker
 {
     partial class Form1
     {
@@ -73,6 +75,13 @@
             this.button1 = new System.Windows.Forms.Button();
             this.lblQuest = new System.Windows.Forms.Label();
             this.btnSubmitQuests = new System.Windows.Forms.Button();
+            this.lblFilter = new System.Windows.Forms.Label();
+            this.cmbCatapultQuests = new System.Windows.Forms.ComboBox();
+            this.lblCatapultFilter = new System.Windows.Forms.Label();
+            this.cmbActionReportQuests = new System.Windows.Forms.ComboBox();
+            this.lblActionReportFilter = new System.Windows.Forms.Label();
+            this.pcbCatapultFilter = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel5.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -89,6 +98,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.picReward1)).BeginInit();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pcbCatapultFilter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // ImportQuests
@@ -106,16 +117,16 @@
             this.mainDiagramControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.mainDiagramControl.BackColor = System.Drawing.Color.PaleTurquoise;
+            this.mainDiagramControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(19)))), ((int)(((byte)(43)))));
             this.mainDiagramControl.Location = new System.Drawing.Point(12, 239);
             this.mainDiagramControl.Name = "mainDiagramControl";
-            this.mainDiagramControl.Size = new System.Drawing.Size(1606, 823);
+            this.mainDiagramControl.Size = new System.Drawing.Size(1659, 842);
             this.mainDiagramControl.TabIndex = 1;
             // 
             // btnPopulate
             // 
             this.btnPopulate.Enabled = false;
-            this.btnPopulate.Location = new System.Drawing.Point(330, 12);
+            this.btnPopulate.Location = new System.Drawing.Point(210, 12);
             this.btnPopulate.Name = "btnPopulate";
             this.btnPopulate.Size = new System.Drawing.Size(192, 55);
             this.btnPopulate.TabIndex = 2;
@@ -126,7 +137,7 @@
             // txtSearch
             // 
             this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSearch.Location = new System.Drawing.Point(1326, 16);
+            this.txtSearch.Location = new System.Drawing.Point(1379, 16);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(95, 20);
             this.txtSearch.TabIndex = 4;
@@ -135,7 +146,7 @@
             // 
             this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSearch.Enabled = false;
-            this.btnSearch.Location = new System.Drawing.Point(1427, 12);
+            this.btnSearch.Location = new System.Drawing.Point(1480, 12);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(191, 26);
             this.btnSearch.TabIndex = 6;
@@ -147,7 +158,7 @@
             // 
             this.btnRemoveFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRemoveFilter.Enabled = false;
-            this.btnRemoveFilter.Location = new System.Drawing.Point(1427, 44);
+            this.btnRemoveFilter.Location = new System.Drawing.Point(1480, 44);
             this.btnRemoveFilter.Name = "btnRemoveFilter";
             this.btnRemoveFilter.Size = new System.Drawing.Size(191, 23);
             this.btnRemoveFilter.TabIndex = 7;
@@ -157,7 +168,7 @@
             // 
             // panel5
             // 
-            this.panel5.BackColor = System.Drawing.Color.PeachPuff;
+            this.panel5.BackColor = System.Drawing.Color.DarkCyan;
             this.panel5.Controls.Add(this.panel6);
             this.panel5.Controls.Add(this.panel4);
             this.panel5.Controls.Add(this.panel3);
@@ -170,8 +181,9 @@
             // 
             // panel6
             // 
-            this.panel6.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.panel6.BackColor = System.Drawing.Color.LightGray;
             this.panel6.Controls.Add(this.lblRequirenments);
+            this.panel6.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.panel6.Location = new System.Drawing.Point(214, 84);
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(766, 72);
@@ -189,11 +201,12 @@
             // 
             // panel4
             // 
-            this.panel4.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.panel4.BackColor = System.Drawing.Color.LightGray;
             this.panel4.Controls.Add(this.lblQuestUnlock);
             this.panel4.Controls.Add(this.lblQuestRequirement);
             this.panel4.Controls.Add(this.label3);
             this.panel4.Controls.Add(this.label2);
+            this.panel4.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.panel4.Location = new System.Drawing.Point(4, 84);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(204, 72);
@@ -237,7 +250,7 @@
             // 
             // panel3
             // 
-            this.panel3.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.panel3.BackColor = System.Drawing.Color.LightGray;
             this.panel3.Controls.Add(this.lblRewardBauxite);
             this.panel3.Controls.Add(this.lblRewardSteel);
             this.panel3.Controls.Add(this.lblRewardAmmo);
@@ -259,6 +272,7 @@
             this.panel3.Controls.Add(this.picReward2);
             this.panel3.Controls.Add(this.picReward1);
             this.panel3.Controls.Add(this.lblRewards);
+            this.panel3.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.panel3.Location = new System.Drawing.Point(986, 4);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(617, 152);
@@ -471,9 +485,10 @@
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.panel2.BackColor = System.Drawing.Color.LightGray;
             this.panel2.Controls.Add(this.linklblToWiki);
             this.panel2.Controls.Add(this.lblQuestName);
+            this.panel2.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.panel2.Location = new System.Drawing.Point(214, 4);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(766, 74);
@@ -505,10 +520,11 @@
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.Color.LightSteelBlue;
+            this.panel1.BackColor = System.Drawing.Color.LightGray;
             this.panel1.Controls.Add(this.btnQuestNotComplete);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.lblQuest);
+            this.panel1.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.panel1.Location = new System.Drawing.Point(4, 4);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(204, 74);
@@ -551,7 +567,7 @@
             // btnSubmitQuests
             // 
             this.btnSubmitQuests.Enabled = false;
-            this.btnSubmitQuests.Location = new System.Drawing.Point(556, 12);
+            this.btnSubmitQuests.Location = new System.Drawing.Point(408, 12);
             this.btnSubmitQuests.Name = "btnSubmitQuests";
             this.btnSubmitQuests.Size = new System.Drawing.Size(192, 55);
             this.btnSubmitQuests.TabIndex = 13;
@@ -559,11 +575,91 @@
             this.btnSubmitQuests.UseVisualStyleBackColor = true;
             this.btnSubmitQuests.Click += new System.EventHandler(this.btnSubmitQuests_Click);
             // 
+            // lblFilter
+            // 
+            this.lblFilter.AutoSize = true;
+            this.lblFilter.ForeColor = System.Drawing.Color.Transparent;
+            this.lblFilter.Location = new System.Drawing.Point(606, 33);
+            this.lblFilter.Name = "lblFilter";
+            this.lblFilter.Size = new System.Drawing.Size(37, 13);
+            this.lblFilter.TabIndex = 15;
+            this.lblFilter.Text = "Filters:";
+            // 
+            // cmbCatapultQuests
+            // 
+            this.cmbCatapultQuests.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbCatapultQuests.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.cmbCatapultQuests.FormattingEnabled = true;
+            this.cmbCatapultQuests.Location = new System.Drawing.Point(727, 33);
+            this.cmbCatapultQuests.Name = "cmbCatapultQuests";
+            this.cmbCatapultQuests.Size = new System.Drawing.Size(60, 21);
+            this.cmbCatapultQuests.TabIndex = 16;
+            this.cmbCatapultQuests.SelectedIndexChanged += new System.EventHandler(this.cmbCatapultQuests_SelectedIndexChanged);
+            // 
+            // lblCatapultFilter
+            // 
+            this.lblCatapultFilter.AutoSize = true;
+            this.lblCatapultFilter.ForeColor = System.Drawing.Color.Transparent;
+            this.lblCatapultFilter.Location = new System.Drawing.Point(724, 17);
+            this.lblCatapultFilter.Name = "lblCatapultFilter";
+            this.lblCatapultFilter.Size = new System.Drawing.Size(46, 13);
+            this.lblCatapultFilter.TabIndex = 17;
+            this.lblCatapultFilter.Text = "Catapult";
+            // 
+            // cmbActionReportQuests
+            // 
+            this.cmbActionReportQuests.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbActionReportQuests.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.cmbActionReportQuests.FormattingEnabled = true;
+            this.cmbActionReportQuests.Location = new System.Drawing.Point(868, 33);
+            this.cmbActionReportQuests.Name = "cmbActionReportQuests";
+            this.cmbActionReportQuests.Size = new System.Drawing.Size(60, 21);
+            this.cmbActionReportQuests.TabIndex = 19;
+            this.cmbActionReportQuests.SelectedIndexChanged += new System.EventHandler(this.cmbActionReportQuests_SelectedIndexChanged);
+            // 
+            // lblActionReportFilter
+            // 
+            this.lblActionReportFilter.AutoSize = true;
+            this.lblActionReportFilter.ForeColor = System.Drawing.Color.Transparent;
+            this.lblActionReportFilter.Location = new System.Drawing.Point(865, 18);
+            this.lblActionReportFilter.Name = "lblActionReportFilter";
+            this.lblActionReportFilter.Size = new System.Drawing.Size(72, 13);
+            this.lblActionReportFilter.TabIndex = 20;
+            this.lblActionReportFilter.Text = "Action Report";
+            // 
+            // pcbCatapultFilter
+            // 
+            this.pcbCatapultFilter.BackgroundImage = global::KancolleQuestTracker.Properties.Resources.Item_Card_Prototype_Flight_Deck_Catapult;
+            this.pcbCatapultFilter.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pcbCatapultFilter.Location = new System.Drawing.Point(649, 7);
+            this.pcbCatapultFilter.Name = "pcbCatapultFilter";
+            this.pcbCatapultFilter.Size = new System.Drawing.Size(69, 60);
+            this.pcbCatapultFilter.TabIndex = 21;
+            this.pcbCatapultFilter.TabStop = false;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::KancolleQuestTracker.Properties.Resources.Action_Report;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(793, 7);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(69, 60);
+            this.pictureBox1.TabIndex = 22;
+            this.pictureBox1.TabStop = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1630, 1074);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(2)))), ((int)(((byte)(128)))), ((int)(((byte)(144)))));
+            this.ClientSize = new System.Drawing.Size(1683, 1093);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.pcbCatapultFilter);
+            this.Controls.Add(this.lblActionReportFilter);
+            this.Controls.Add(this.cmbActionReportQuests);
+            this.Controls.Add(this.lblCatapultFilter);
+            this.Controls.Add(this.cmbCatapultQuests);
+            this.Controls.Add(this.lblFilter);
             this.Controls.Add(this.btnSubmitQuests);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.btnRemoveFilter);
@@ -574,7 +670,7 @@
             this.Controls.Add(this.ImportQuests);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "Ooyodo Replica";
+            this.Text = "Fake Ooyodo | Buki";
             this.panel5.ResumeLayout(false);
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
@@ -596,6 +692,8 @@
             this.panel2.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pcbCatapultFilter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -647,6 +745,13 @@
         private System.Windows.Forms.Button btnSubmitQuests;
         private System.Windows.Forms.LinkLabel linklblToWiki;
         private System.Windows.Forms.Button btnQuestNotComplete;
+        private System.Windows.Forms.Label lblFilter;
+        private System.Windows.Forms.ComboBox cmbCatapultQuests;
+        private System.Windows.Forms.Label lblCatapultFilter;
+        private System.Windows.Forms.ComboBox cmbActionReportQuests;
+        private System.Windows.Forms.Label lblActionReportFilter;
+        private System.Windows.Forms.PictureBox pcbCatapultFilter;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

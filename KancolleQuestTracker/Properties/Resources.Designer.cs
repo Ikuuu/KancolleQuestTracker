@@ -63,6 +63,16 @@ namespace KancolleQuestTracker.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Action_Report {
+            get {
+                object obj = ResourceManager.GetObject("Action_Report", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Ammo {
             get {
                 object obj = ResourceManager.GetObject("Ammo", resourceCulture);
@@ -86,6 +96,16 @@ namespace KancolleQuestTracker.Properties {
         internal static System.Drawing.Bitmap Fuel {
             get {
                 object obj = ResourceManager.GetObject("Fuel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Item_Card_Prototype_Flight_Deck_Catapult {
+            get {
+                object obj = ResourceManager.GetObject("Item_Card_Prototype_Flight_Deck_Catapult", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

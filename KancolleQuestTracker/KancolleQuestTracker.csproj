@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Ooyodo_Icon.ico</ApplicationIcon>
+    <ApplicationIcon>buki icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HtmlAgilityPack, Version=1.11.65.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
@@ -269,6 +269,9 @@
     <None Include="icons\Steel.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="icons\Action_Report.png" />
+    <None Include="icons\Item_Card_Prototype_Flight_Deck_Catapult.png" />
+    <Content Include="buki icon.ico" />
     <Content Include="Ooyodo_Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

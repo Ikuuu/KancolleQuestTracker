@@ -16,6 +16,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using iText.Commons.Utils;
+using OpenTK.Input;
 
 namespace KancolleQuestTracker
 {
@@ -34,12 +36,13 @@ namespace KancolleQuestTracker
         private Node currentlyClickedNode;
         private List<String> completedQuest = new List<String>();
         private List<String> manuallyCompleted = new List<String>();
-
+        private bool comboBoxBool = true;
         public Form1()
         {
             InitializeComponent();
             
             myDiagram = mainDiagramControl.Diagram;
+            myDiagram.InitialAutoScale = Northwoods.Go.AutoScale.UniformToFill;
             myDiagram.AllowMove = false;
             myDiagram.AllowCopy = false;
             myDiagram.AllowDelete = false;
@@ -49,9 +52,27 @@ namespace KancolleQuestTracker
 
             foreach (var node in myDiagram.Nodes)
             {
-                var aShape = node.FindElement("SHAPE") as Shape;
+                String nodeID = node.Part.Key.ToString();
+                Shape aShape = node.FindElement("SHAPE") as Shape;
                 node.Opacity = .2;
-                aShape.Stroke = null;
+                
+                if (nodeID.Contains("a") || nodeID.Contains("A"))
+                    aShape.Stroke = "Green";
+                else if (nodeID.Contains("b") || nodeID.Contains("B"))
+                    aShape.Stroke = "Red";
+                else if (nodeID.Contains("c") || nodeID.Contains("C"))
+                    aShape.Stroke = "LightGreen";
+                else if (nodeID.Contains("d") || nodeID.Contains("D"))
+                    aShape.Stroke = "Light Blue";
+                else if (nodeID.Contains("e") || nodeID.Contains("E"))
+                    aShape.Stroke = "Dark Yellow";
+                else if (nodeID.Contains("f") || nodeID.Contains("F"))
+                    aShape.Stroke = "Brown";
+                else if (nodeID.Contains("g") || nodeID.Contains("G"))
+                    aShape.Stroke = "Purple";
+                
+
+                //aShape.Stroke = null;
                 //node.Visible = false;
             }
 
@@ -64,7 +85,6 @@ namespace KancolleQuestTracker
             Node currNode = obj as Node;
             currNode.IsSelected = !currNode.IsSelected;
             var shape = currNode.FindElement("SHAPE") as Shape;
-            
             shape.Stroke = "yellow";
             
             highlightNodeLineBack(currNode);
@@ -109,17 +129,18 @@ namespace KancolleQuestTracker
             myDiagram.NodeTemplate =
                 new Node("Auto")
                 {
-                    Click = (e, obj) => 
+                    Click = (e, obj) =>
                     {
-                        
+
                         currentlyClickedNode = obj as Node;
                         nodeClick(obj);
                         generateQuestInfo(obj as Node);
-                        
+
                     },
-                    DoubleClick = (e, obj) => 
+                    DoubleClick = (e, obj) =>
                     {
                         Node thisNode = obj as Node;
+                        /*
                         generateQuestInfo(thisNode);
                         Shape aShape = thisNode.FindElement("SHAPE") as Shape;
                         aShape.Stroke = "yellow";
@@ -129,6 +150,9 @@ namespace KancolleQuestTracker
                         }
                         searchedNodesBack(thisNode);
                         searchedNodesForward(thisNode);
+
+                        */
+                        filterDownToNode(thisNode);
 
                     },
                     Cursor = "pointer"
@@ -142,9 +166,9 @@ namespace KancolleQuestTracker
                         Stroke = null,
                         StrokeWidth = 15,
                         Cursor = "pointer",
-                        
-                    }   
-                        .Bind("Fill", "Color"),
+                        Fill = "#dcdcdc"
+                    }
+                        .Bind("Stroke", "Color"),
                     new TextBlock
                     { Margin = 6, Font = new Northwoods.Go.Font("Segoe UI", 126), }
                       .Bind(new Northwoods.Go.Models.Binding("Text"))
@@ -155,9 +179,10 @@ namespace KancolleQuestTracker
                  {
                     ToShortLength = 10,
                     
+                    
                  }.Add(
-                    new Shape { StrokeWidth = 16, Opacity = 1 },
-                    new Shape { ToArrow = "Standard", Stroke = null }
+                    new Shape { StrokeWidth = 16, Opacity = 1, Stroke = "#dcdcdc" }
+                    //new Shape { ToArrow = "Standard", Stroke = null }
                  );
 
             
@@ -175,8 +200,10 @@ namespace KancolleQuestTracker
                 ColumnSpacing = 0
             };
 
-
+            
         }
+
+
 
         private void clearOldRewards() 
         {
@@ -337,15 +364,33 @@ namespace KancolleQuestTracker
         {
             foreach (var node in myDiagram.Nodes)
             {
+                String nodeID = node.Part.Key.ToString();
                 Shape aShape = node.FindElement("SHAPE") as Shape;
-                aShape.Stroke = null;
+                //aShape.Stroke = null;
                 node.Visible = true;
+
+                if (nodeID.Contains("a"))
+                    aShape.Stroke = "Green";
+                else if (nodeID.Contains("b"))
+                    aShape.Stroke = "Red";
+                else if (nodeID.Contains("c"))
+                    aShape.Stroke = "Light Green";
+                else if (nodeID.Contains("d"))
+                    aShape.Stroke = "Light Blue";
+                else if (nodeID.Contains("e"))
+                    aShape.Stroke = "Dark Yellow";
+                else if (nodeID.Contains("f"))
+                    aShape.Stroke = "Brown";
+                else if (nodeID.Contains("g"))
+                    aShape.Stroke = "Purple";
 
                 Shape aRibbon = node.FindElement("RIBBON") as Shape;
                 if (aRibbon == null) 
                     node.Opacity = 1;
                 else 
                     node.Opacity = .5;
+
+
             }
 
             foreach (var link in myDiagram.Links)
@@ -521,20 +566,49 @@ namespace KancolleQuestTracker
                     }
                 }
 
+                updateCmbBoxes();
+
                 btnSubmitQuests.Enabled = false;
-                
+                button1.Enabled = true;
+                btnQuestNotComplete.Enabled = true;
+
             }
             catch (Exception ex) 
             {
                 throw new Exception(ex.Message);
             }
-
-            button1.Enabled = true;
-            btnQuestNotComplete.Enabled = true;
-                
             
         }
+        private void updateCmbBoxes() 
+        {
+            for (int i = 0; i < cmbCatapultQuests.Items.Count; i++)
+            {
+                String cmbItem = cmbCatapultQuests.Items[i].ToString();
 
+                Node aNode = myDiagram.FindNodeForKey(cmbItem.ToString().ToLower() as object);
+                if (aNode != null)
+                {
+                    if (aNode.FindElement("RIBBON_PANEL") != null)
+                    {
+                        cmbCatapultQuests.Items[i] = "✓ " + cmbItem;
+                    }
+                }
+            }
+
+            for (int i = 0; i < cmbActionReportQuests.Items.Count; i++)
+            {
+                String cmbItem = cmbActionReportQuests.Items[i].ToString();
+
+                Node aNode = myDiagram.FindNodeForKey(cmbItem.ToString().ToLower() as object);
+                if (aNode != null)
+                {
+                    if (aNode.FindElement("RIBBON_PANEL") != null)
+                    {
+                        cmbActionReportQuests.Items[i] = "✓ " + cmbItem;
+                    }
+                }
+            }
+        }
         private void linklblToWiki_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start($"https://en.kancollewiki.net/Quests#{linklblToWiki.Text}");
@@ -559,6 +633,8 @@ namespace KancolleQuestTracker
                 rewriteQuestFile();
                 manuallyCompleted.Add(currentlyClickedNode.Part.Key.ToString());
                 rewriteManuallyCompleted();
+
+                updateCmbBoxes();
             }
         }
 
@@ -856,6 +932,8 @@ namespace KancolleQuestTracker
 
         }
 
+        
+
         private void btnPopulate_Click(object sender, EventArgs e)
         {
             foreach (QuestItem aQuest in quests)
@@ -917,9 +995,19 @@ namespace KancolleQuestTracker
                     }
 
 
-
-
                 }
+                foreach (Reward possibleReward in aQuest.possibleRewards) 
+                {
+                    if (possibleReward.name.Contains("Action Report")) 
+                    {
+                        cmbActionReportQuests.Items.Add(aQuest.ID);
+                    }
+                    if (possibleReward.name.Contains("Prototype Flight Deck Catapult")) 
+                    {
+                        cmbCatapultQuests.Items.Add(aQuest.ID);
+                    }
+                }
+
             }
 
             setup();
@@ -928,6 +1016,65 @@ namespace KancolleQuestTracker
             btnSubmitQuests.Enabled = true;
             btnSearch.Enabled = true;
             btnRemoveFilter.Enabled = true;
+        }
+        private void filterDownToNode(Node aNode) 
+        {
+            generateQuestInfo(aNode);
+            Shape aShape = aNode.FindElement("SHAPE") as Shape;
+            aShape.Stroke = "yellow";
+            
+            foreach (var node in myDiagram.Nodes)
+            {
+                node.Visible = false;
+            }
+            searchedNodesBack(aNode);
+            searchedNodesForward(aNode);
+            nodeClick(aNode);
+        }
+
+        private void cmbCatapultQuests_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBoxBool) 
+            {
+                comboBoxBool = false;
+                cmbActionReportQuests.SelectedItem = null;
+                String itemSelected = cmbCatapultQuests.SelectedItem.ToString().ToLower();
+
+                if (itemSelected.StartsWith("✓ ")) 
+                    itemSelected = itemSelected.Replace("✓ ", "");
+
+                Node searchedNode = myDiagram.FindNodeForKey(itemSelected as object);
+
+                if (searchedNode != null)
+                {
+                    filterDownToNode(searchedNode);
+                }
+                comboBoxBool = true;
+            }
+
+            
+        }
+
+        private void cmbActionReportQuests_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBoxBool)
+            {
+                comboBoxBool = false;
+                cmbCatapultQuests.SelectedItem = null;
+                String itemSelected = cmbActionReportQuests.SelectedItem.ToString().ToLower();
+
+                if (itemSelected.StartsWith("✓ "))
+                    itemSelected = itemSelected.Replace("✓ ", "");
+
+                Node searchedNode = myDiagram.FindNodeForKey(itemSelected as object);
+
+                if (searchedNode != null)
+                {
+                    filterDownToNode(searchedNode);
+                }
+                comboBoxBool = true;
+            }
+
         }
     }
 }
