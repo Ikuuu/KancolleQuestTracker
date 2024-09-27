@@ -786,8 +786,9 @@ namespace KancolleQuestTracker
 
             try
             {
+                web.Timeout = 20000;
                 HtmlAgilityPack.HtmlDocument htmlDoc = web.Load(url);
-                    
+                
 
                 HtmlNode htmlNode = htmlDoc.DocumentNode.ChildNodes[3].ChildNodes[3].ChildNodes[5].ChildNodes[9].ChildNodes[13].ChildNodes[0];
 
@@ -930,7 +931,7 @@ namespace KancolleQuestTracker
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                MessageBox.Show($"Kancolle Wiki might be down please check, if its up then there is a bug.", "Wiki Dead?", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
 
