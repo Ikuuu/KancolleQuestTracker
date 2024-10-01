@@ -68,7 +68,7 @@ namespace KancolleQuestTracker
                 else if (nodeID.Contains("e") || nodeID.Contains("E"))
                     aShape.Stroke = "Dark Yellow";
                 else if (nodeID.Contains("f") || nodeID.Contains("F"))
-                    aShape.Stroke = "Brown";
+                    aShape.Stroke = "#907454";
                 else if (nodeID.Contains("g") || nodeID.Contains("G"))
                     aShape.Stroke = "Purple";
                 
@@ -165,7 +165,7 @@ namespace KancolleQuestTracker
                         Height = 200,
                         Margin = 0,
                         Stroke = null,
-                        StrokeWidth = 15,
+                        StrokeWidth = 30,
                         Cursor = "pointer",
                         Fill = "#dcdcdc"
                     }
@@ -319,11 +319,11 @@ namespace KancolleQuestTracker
                         panel6.BackColor = Color.Yellow;
                         break;
                     case "Factory":
-                        panel1.BackColor = Color.Brown;
-                        panel2.BackColor = Color.Brown;
-                        panel3.BackColor = Color.Brown;
-                        panel4.BackColor = Color.Brown;
-                        panel6.BackColor = Color.Brown;
+                        panel1.BackColor = ColorTranslator.FromHtml("#907454");
+                        panel2.BackColor = ColorTranslator.FromHtml("#907454");
+                        panel3.BackColor = ColorTranslator.FromHtml("#907454");
+                        panel4.BackColor = ColorTranslator.FromHtml("#907454");
+                        panel6.BackColor = ColorTranslator.FromHtml("#907454");
                         break;
                     case "Modernization":
                         panel1.BackColor = Color.Purple;
@@ -381,7 +381,7 @@ namespace KancolleQuestTracker
                 else if (nodeID.Contains("e"))
                     aShape.Stroke = "Dark Yellow";
                 else if (nodeID.Contains("f"))
-                    aShape.Stroke = "Brown";
+                    aShape.Stroke = "#907454";
                 else if (nodeID.Contains("g"))
                     aShape.Stroke = "Purple";
 
@@ -968,7 +968,7 @@ namespace KancolleQuestTracker
                         aNode = new NodeData { Key = aQuest.ID.ToLower(), Text = aQuest.ID, Color = "yellow", isCompleted = false };
                         break;
                     case "Factory":
-                        aNode = new NodeData { Key = aQuest.ID.ToLower(), Text = aQuest.ID, Color = "brown", isCompleted = false };
+                        aNode = new NodeData { Key = aQuest.ID.ToLower(), Text = aQuest.ID, Color = "#907454", isCompleted = false };
                         break;
                     case "Modernization":
                         aNode = new NodeData { Key = aQuest.ID.ToLower(), Text = aQuest.ID, Color = "purple", isCompleted = false };
